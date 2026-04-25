@@ -14,3 +14,6 @@ build
 # tsc-emitted artifacts of vite.config.ts (the .ts file is source-of-truth)
 frontend/vite.config.js
 frontend/vite.config.d.ts
+
+# Firebase CLI cache
+.firebase/
