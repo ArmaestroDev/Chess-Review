@@ -43,7 +43,7 @@ export function Header({
         </div>
 
         {/* Nav (pill) */}
-        <nav className="flex gap-1 p-[3px] bg-line/60 rounded-full border border-line">
+        <nav className="flex gap-1 p-[3px] bg-wood-dark/70 rounded-full border border-line">
           <NavLink active>Review</NavLink>
           <NavLink onClick={onReset} disabled={!hasGame}>
             New game
