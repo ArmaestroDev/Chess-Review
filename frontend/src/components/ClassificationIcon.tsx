@@ -67,7 +67,7 @@ export function ClassificationIcon({ classification, size = 22, className }: Pro
         (className ?? '')
       }
       style={{
-        backgroundColor: isEmoji ? '#3b2e1d' : color,
+        backgroundColor: isEmoji ? 'rgb(var(--wood-card))' : color,
         color: 'white',
         width: size,
         height: size,

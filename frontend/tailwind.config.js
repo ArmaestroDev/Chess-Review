@@ -4,36 +4,36 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Chess board surfaces
+        // Chess board surfaces — kept consistent across themes for readability.
         board: {
-          light: '#ebecd0',
-          dark: '#7c7ac6',
+          light: '#ebd8b7',
+          dark: '#8c6f4f',
           highlight: '#f6e07a',
           arrow: '#86bf2c',
         },
-        // Wood / panel surface palette (dark theme).
+        // Surface palette — driven by CSS vars so themes can swap in one shot.
         wood: {
-          DEFAULT: '#3b2317',
-          dark: '#241410',
-          light: '#5a3823',
-          panel: '#2a1a11',
-          card: '#33201a',
-          hover: '#3d2620',
+          DEFAULT: 'rgb(var(--wood-default) / <alpha-value>)',
+          dark: 'rgb(var(--wood-dark) / <alpha-value>)',
+          light: 'rgb(var(--wood-light) / <alpha-value>)',
+          panel: 'rgb(var(--wood-panel) / <alpha-value>)',
+          card: 'rgb(var(--wood-card) / <alpha-value>)',
+          hover: 'rgb(var(--wood-hover) / <alpha-value>)',
         },
-        // Foreground (text) ramp on the dark wood.
+        // Foreground (text) ramp.
         ink: {
-          DEFAULT: '#f4ecd8',
-          2: '#e6dbc1',
-          3: '#b8a988',
-          4: '#8a7d62',
-          5: '#5e5443',
+          DEFAULT: 'rgb(var(--ink-default) / <alpha-value>)',
+          2: 'rgb(var(--ink-2) / <alpha-value>)',
+          3: 'rgb(var(--ink-3) / <alpha-value>)',
+          4: 'rgb(var(--ink-4) / <alpha-value>)',
+          5: 'rgb(var(--ink-5) / <alpha-value>)',
         },
-        // Hairlines and borders.
+        // Hairlines — themeable to keep contrast on each theme's surfaces.
         line: {
-          DEFAULT: 'rgba(245, 232, 200, 0.10)',
-          2: 'rgba(245, 232, 200, 0.18)',
+          DEFAULT: 'var(--line)',
+          2: 'var(--line-2)',
         },
-        // Move classification colors (also used by EvalChart, badges, etc.).
+        // Move classifications — fixed colors (chess UX).
         review: {
           best: '#1ea05a',
           brilliant: '#1baca6',
@@ -45,14 +45,14 @@ export default {
           mistake: '#f08a36',
           blunder: '#d6443a',
         },
-        // Brand accent — warm gold/amber.
+        // Brand accent — themed.
         accent: {
-          DEFAULT: '#d8b56a',
-          ink: '#f5cf7a',
-          soft: 'rgba(216, 181, 106, 0.16)',
-          softer: 'rgba(216, 181, 106, 0.08)',
+          DEFAULT: 'rgb(var(--accent-default) / <alpha-value>)',
+          ink: 'rgb(var(--accent-ink) / <alpha-value>)',
+          soft: 'var(--accent-soft)',
+          softer: 'var(--accent-softer)',
         },
-        // Semantic eval colors for the bar / chart.
+        // Eval semantic colors (kept fixed).
         pos: '#86bf2c',
         neg: '#d6443a',
       },
@@ -62,10 +62,10 @@ export default {
         serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
       },
       boxShadow: {
-        'card': '0 1px 2px rgba(0, 0, 0, 0.25), 0 0 0 0.5px rgba(245, 232, 200, 0.04)',
+        card: '0 1px 2px rgba(0, 0, 0, 0.25), 0 0 0 0.5px rgba(245, 232, 200, 0.04)',
         'card-md': '0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(245, 232, 200, 0.05)',
-        'panel': '0 30px 60px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
-        'board': '0 1px 0 rgba(255, 220, 150, 0.06) inset, 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(245, 232, 200, 0.10)',
+        panel: '0 30px 60px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+        board: '0 1px 0 rgba(255, 220, 150, 0.06) inset, 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(245, 232, 200, 0.10)',
         'inset-card': 'inset 0 1px 0 rgba(255, 220, 150, 0.06)',
       },
       borderRadius: {

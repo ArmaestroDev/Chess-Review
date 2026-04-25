@@ -51,13 +51,10 @@ function AccBar({
         </span>
         <span className="font-mono text-[18px] font-semibold">{pct.toFixed(1)}</span>
       </div>
-      <div className="h-1 rounded-[2px] bg-line/60 mt-2 overflow-hidden">
+      <div className="h-1 rounded-[2px] bg-line mt-2 overflow-hidden">
         <div
-          className="h-full rounded-[2px] transition-[width] duration-300"
-          style={{
-            width: `${pct}%`,
-            background: 'linear-gradient(90deg, #b8862b, #d8b56a)',
-          }}
+          className="h-full rounded-[2px] accent-grad transition-[width] duration-300"
+          style={{ width: `${pct}%` }}
         />
       </div>
     </div>

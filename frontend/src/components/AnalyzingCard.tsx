@@ -24,11 +24,8 @@ export function AnalyzingCard({ done, total, onCancel }: Props) {
         <div className="w-full">
           <div className="h-1.5 bg-wood-dark/60 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-[width] duration-150"
-              style={{
-                width: `${pct}%`,
-                background: 'linear-gradient(90deg, #b8862b, #d8b56a)',
-              }}
+              className="h-full rounded-full accent-grad transition-[width] duration-150"
+              style={{ width: `${pct}%` }}
             />
           </div>
         </div>

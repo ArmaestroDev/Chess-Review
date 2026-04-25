@@ -75,7 +75,7 @@ export function EvalChart({
           x2={PADDING_X + innerW}
           y1={PADDING_Y + innerH / 2}
           y2={PADDING_Y + innerH / 2}
-          stroke="rgba(216,181,106,0.25)"
+          stroke="rgb(var(--accent-default) / 0.3)"
           strokeWidth={1}
         />
         {/* fill (white wins area) */}
@@ -106,7 +106,7 @@ export function EvalChart({
           x2={cursorX}
           y1={PADDING_Y}
           y2={PADDING_Y + innerH}
-          stroke="#d8b56a"
+          stroke="rgb(var(--accent-default))"
           strokeWidth={2}
         />
       </svg>

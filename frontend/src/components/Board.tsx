@@ -80,8 +80,8 @@ export function Board({
         boardOrientation={orientation}
         arePiecesDraggable={draggable}
         animationDuration={150}
-        customDarkSquareStyle={{ backgroundColor: '#8c6f4f' }}
-        customLightSquareStyle={{ backgroundColor: '#ebd8b7' }}
+        customDarkSquareStyle={{ backgroundColor: 'var(--board-dark)' }}
+        customLightSquareStyle={{ backgroundColor: 'var(--board-light)' }}
         customSquareStyles={customSquareStyles}
         customArrows={customArrows as any}
         customBoardStyle={{

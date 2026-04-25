@@ -1,9 +1,10 @@
-import { ArrowUpDown, Search, Volume2, VolumeX } from 'lucide-react';
+import { ArrowUpDown, Settings as SettingsIcon, Volume2, VolumeX } from 'lucide-react';
 
 interface Props {
   onReset: () => void;
   onFlipBoard: () => void;
   onToggleMute: () => void;
+  onOpenSettings: () => void;
   muted: boolean;
   hasGame: boolean;
 }
@@ -12,6 +13,7 @@ export function Header({
   onReset,
   onFlipBoard,
   onToggleMute,
+  onOpenSettings,
   muted,
   hasGame,
 }: Props) {
@@ -23,9 +25,10 @@ export function Header({
           <div
             className="w-[34px] h-[34px] rounded-[9px] flex items-center justify-center text-accent-ink"
             style={{
-              background: 'linear-gradient(180deg, #2a2418, #1d1a14)',
+              background:
+                'linear-gradient(180deg, rgb(var(--wood-card)), rgb(var(--wood-dark)))',
               boxShadow:
-                'inset 0 1px 0 rgba(255, 220, 150, 0.18), 0 1px 2px rgba(0, 0, 0, 0.5)',
+                'inset 0 1px 0 var(--accent-soft), 0 1px 2px rgba(0, 0, 0, 0.5)',
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -58,16 +61,9 @@ export function Header({
           <IconBtn onClick={onToggleMute} title={muted ? 'Unmute' : 'Mute'}>
             {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </IconBtn>
-          <IconBtn title="Search">
-            <Search size={16} />
+          <IconBtn onClick={onOpenSettings} title="Settings">
+            <SettingsIcon size={16} />
           </IconBtn>
-          <div
-            className="w-8 h-8 rounded-full text-stone-50 flex items-center justify-center text-xs font-semibold shadow-card"
-            style={{ background: 'linear-gradient(135deg, #c9a961, #8a6a2b)' }}
-            aria-label="account"
-          >
-            A
-          </div>
         </div>
       </div>
     </header>

@@ -24,11 +24,11 @@ export function EvalBar({ evalWhite, height = '100%', orientation = 'white' }: P
 
   return (
     <div
-      className="relative w-[22px] rounded-md overflow-hidden bg-stone-900 shadow-inner"
+      className="relative w-[22px] rounded-md overflow-hidden bg-wood-dark shadow-inner"
       style={{
         height,
         boxShadow:
-          'inset 0 0 0 0.5px rgba(0,0,0,0.4), 0 1px 2px rgba(40,30,15,0.05)',
+          'inset 0 0 0 0.5px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.15)',
       }}
     >
       <div

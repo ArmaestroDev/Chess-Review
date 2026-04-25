@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import {
   fetchRecentGames,
@@ -9,6 +9,7 @@ import {
 interface Props {
   onAnalyze: (pgn: string, depth: number, perspective?: 'white' | 'black') => void;
   busy: boolean;
+  defaultUsername?: string;
 }
 
 const SAMPLE_PGN = `[Event "Sample"]
@@ -26,20 +27,33 @@ const SAMPLE_PGN = `[Event "Sample"]
 
 type Tab = 'chesscom' | 'pgn';
 
-export function PgnLoader({ onAnalyze, busy }: Props) {
+export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
   const [tab, setTab] = useState<Tab>('chesscom');
   const [pgn, setPgn] = useState('');
   const [depth, setDepth] = useState(14);
 
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(defaultUsername ?? '');
   const [games, setGames] = useState<ChessComGame[]>([]);
   const [perspective, setPerspective] = useState('');
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [loadingGames, setLoadingGames] = useState(false);
   const [chessComError, setChessComError] = useState<string | null>(null);
 
-  async function loadGames() {
-    const u = username.trim();
+  // Auto-load whenever a default username is set (and changes via Settings).
+  // Tracked via a ref so we don't re-fetch when the user manually edits the
+  // input or `loadGames` redefines below.
+  const lastAutoLoadedFor = useRef<string | null>(null);
+  useEffect(() => {
+    const u = (defaultUsername ?? '').trim();
+    if (!u) return;
+    if (lastAutoLoadedFor.current === u) return;
+    lastAutoLoadedFor.current = u;
+    setUsername(u);
+    void loadGamesFor(u);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultUsername]);
+
+  async function loadGamesFor(u: string) {
     if (!u) return;
     setLoadingGames(true);
     setChessComError(null);
@@ -63,6 +77,10 @@ export function PgnLoader({ onAnalyze, busy }: Props) {
     } finally {
       setLoadingGames(false);
     }
+  }
+
+  async function loadGames() {
+    await loadGamesFor(username.trim());
   }
 
   function startAnalyze() {
@@ -198,15 +216,16 @@ export function PgnLoader({ onAnalyze, busy }: Props) {
           type="button"
           disabled={!canAnalyze}
           onClick={startAnalyze}
-          className="w-full h-[38px] rounded-[9px] flex items-center justify-center gap-2 text-[13px] font-semibold text-stone-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className={
+            'w-full h-[38px] rounded-[9px] flex items-center justify-center gap-2 text-[13px] font-semibold transition-all ' +
+            (canAnalyze
+              ? 'accent-grad text-wood-dark hover:brightness-110'
+              : 'bg-wood-hover text-ink-4 cursor-not-allowed')
+          }
           style={{
-            background: canAnalyze
-              ? 'linear-gradient(180deg, #d8b56a 0%, #b8862b 100%)'
-              : 'linear-gradient(180deg, #4a3a28 0%, #3b2c1e 100%)',
             boxShadow: canAnalyze
-              ? 'inset 0 1px 0 rgba(255, 220, 150, 0.3), 0 2px 4px rgba(0, 0, 0, 0.4)'
-              : 'inset 0 1px 0 rgba(255, 220, 150, 0.06)',
-            color: canAnalyze ? '#1d1a14' : '#8a7d62',
+              ? 'inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.35)'
+              : 'inset 0 1px 0 rgba(255, 255, 255, 0.04)',
           }}
         >
           {busy && <Loader2 size={14} className="animate-spin" />}

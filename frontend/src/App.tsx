@@ -11,6 +11,13 @@ import { CommentBubble } from './components/CommentBubble';
 import { AccuracyCard } from './components/AccuracyCard';
 import { AnalyzingCard } from './components/AnalyzingCard';
 import { EvalChart } from './components/EvalChart';
+import { SettingsModal } from './components/SettingsModal';
+import {
+  applyTheme,
+  loadSettings,
+  saveSettings,
+  type Settings as AppSettings,
+} from './utils/settings';
 import { socket } from './socket';
 import type {
   AnalysisEvent,
@@ -61,6 +68,18 @@ function App() {
   const [boardSize, setBoardSize] = useState(560);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [muted, setMutedState] = useState<boolean>(() => isMuted());
+  const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Apply the theme class to <html> on mount and whenever it changes.
+  useEffect(() => {
+    applyTheme(settings.theme);
+  }, [settings.theme]);
+
+  const handleSaveSettings = useCallback((next: AppSettings) => {
+    setSettings(next);
+    saveSettings(next);
+  }, []);
 
   const playTimer = useRef<number | null>(null);
   const lastSoundedNode = useRef<NodeId | null>(null);
@@ -538,6 +557,7 @@ function App() {
         onReset={handleReset}
         onFlipBoard={toggleOrientation}
         onToggleMute={toggleMute}
+        onOpenSettings={() => setSettingsOpen(true)}
         muted={muted}
         hasGame={hasGame}
       />
@@ -562,51 +582,60 @@ function App() {
           />
         </div>
 
-        {/* CENTER — player strips + eval + board */}
-        <div className="flex flex-col gap-2.5 items-stretch min-w-0">
-          <PlayerStrip
-            color={playerLabel.topColor}
-            name={playerLabel.top}
-            rating={playerLabel.topRating}
-            accuracy={
-              playerLabel.topColor === 'white'
-                ? meta.whiteAccuracy
-                : meta.blackAccuracy
-            }
-            active={hasGame && playerToMove === playerLabel.topColor}
-          />
+        {/* CENTER — player strips + eval + board (constrained to board width) */}
+        <div className="flex justify-center min-w-0">
           <div
-            className="grid gap-2.5 items-stretch"
-            style={{ gridTemplateColumns: '22px 1fr', height: boardSize }}
+            className="flex flex-col gap-2.5 items-stretch"
+            style={{ width: boardSize + 32 }}
           >
-            <EvalBar evalWhite={evalForBar} orientation={orientation} />
-            <Board
-              fen={displayedFen}
-              size={boardSize}
-              orientation={orientation}
-              highlightedSquares={highlights}
-              arrows={arrows}
-              badge={badge}
-              onMove={allowDrag ? handlePieceMove : undefined}
+            <PlayerStrip
+              color={playerLabel.topColor}
+              name={playerLabel.top}
+              rating={playerLabel.topRating}
+              accuracy={
+                playerLabel.topColor === 'white'
+                  ? meta.whiteAccuracy
+                  : meta.blackAccuracy
+              }
+              active={hasGame && playerToMove === playerLabel.topColor}
+            />
+            <div
+              className="grid gap-2.5 items-stretch"
+              style={{ gridTemplateColumns: '22px 1fr', height: boardSize }}
+            >
+              <EvalBar evalWhite={evalForBar} orientation={orientation} />
+              <Board
+                fen={displayedFen}
+                size={boardSize}
+                orientation={orientation}
+                highlightedSquares={highlights}
+                arrows={arrows}
+                badge={badge}
+                onMove={allowDrag ? handlePieceMove : undefined}
+              />
+            </div>
+            <PlayerStrip
+              color={playerLabel.bottomColor}
+              name={playerLabel.bottom}
+              rating={playerLabel.bottomRating}
+              accuracy={
+                playerLabel.bottomColor === 'white'
+                  ? meta.whiteAccuracy
+                  : meta.blackAccuracy
+              }
+              active={hasGame && playerToMove === playerLabel.bottomColor}
             />
           </div>
-          <PlayerStrip
-            color={playerLabel.bottomColor}
-            name={playerLabel.bottom}
-            rating={playerLabel.bottomRating}
-            accuracy={
-              playerLabel.bottomColor === 'white'
-                ? meta.whiteAccuracy
-                : meta.blackAccuracy
-            }
-            active={hasGame && playerToMove === playerLabel.bottomColor}
-          />
         </div>
 
         {/* RIGHT — source / coach / accuracy / chart */}
         <div className="flex flex-col gap-4 min-w-0">
           {showLoader ? (
-            <PgnLoader onAnalyze={handleAnalyze} busy={false} />
+            <PgnLoader
+              onAnalyze={handleAnalyze}
+              busy={false}
+              defaultUsername={settings.chessComUsername}
+            />
           ) : showAnalyzing ? (
             <AnalyzingCard
               done={mainlineCount}
@@ -655,6 +684,13 @@ function App() {
           <div className="text-sm">{error}</div>
         </div>
       )}
+
+      <SettingsModal
+        open={settingsOpen}
+        initial={settings}
+        onClose={() => setSettingsOpen(false)}
+        onSave={handleSaveSettings}
+      />
     </div>
   );
 }

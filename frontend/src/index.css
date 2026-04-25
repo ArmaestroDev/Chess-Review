@@ -2,6 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme system — every themable color is a CSS var. Swap a class on <html>
+ * (theme-wood / theme-purple / theme-ocean / theme-lagoon) and the whole palette
+ * shifts. RGB-triple format so Tailwind's `bg-wood-card/60`-style opacity
+ * modifiers keep working through the rgb(var(...) / <alpha-value>) pattern.
+ */
+
+:root,
+.theme-wood {
+  --wood-default: 59 35 23;
+  --wood-dark: 36 20 16;
+  --wood-light: 90 56 35;
+  --wood-panel: 42 26 17;
+  --wood-card: 51 32 26;
+  --wood-hover: 61 38 32;
+
+  --ink-default: 244 236 216;
+  --ink-2: 230 219 193;
+  --ink-3: 184 169 136;
+  --ink-4: 138 125 98;
+  --ink-5: 94 84 67;
+
+  --line: rgba(245, 232, 200, 0.10);
+  --line-2: rgba(245, 232, 200, 0.18);
+
+  --accent-default: 216 181 106;
+  --accent-ink: 245 207 122;
+  --accent-soft: rgba(216, 181, 106, 0.16);
+  --accent-softer: rgba(216, 181, 106, 0.08);
+
+  --bg-grad-1: rgba(216, 181, 106, 0.06);
+  --bg-grad-2: rgba(0, 0, 0, 0.25);
+  --bg-from: #4a2c1a;
+  --bg-mid: #2d1a0e;
+  --bg-to: #3b2317;
+  --bg-noise: rgba(255, 220, 180, 0.025);
+
+  --board-light: #ebd8b7;
+  --board-dark: #8c6f4f;
+}
+
+.theme-purple {
+  --wood-default: 45 31 74;
+  --wood-dark: 26 15 46;
+  --wood-light: 61 42 94;
+  --wood-panel: 37 26 58;
+  --wood-card: 42 29 68;
+  --wood-hover: 52 37 78;
+
+  --ink-default: 234 224 250;
+  --ink-2: 214 200 240;
+  --ink-3: 168 150 210;
+  --ink-4: 122 105 165;
+  --ink-5: 82 70 115;
+
+  --line: rgba(212, 186, 255, 0.10);
+  --line-2: rgba(212, 186, 255, 0.20);
+
+  --accent-default: 181 148 245;
+  --accent-ink: 212 186 255;
+  --accent-soft: rgba(181, 148, 245, 0.18);
+  --accent-softer: rgba(181, 148, 245, 0.08);
+
+  --bg-grad-1: rgba(181, 148, 245, 0.08);
+  --bg-grad-2: rgba(0, 0, 0, 0.30);
+  --bg-from: #3a2762;
+  --bg-mid: #1a0f2e;
+  --bg-to: #2d1f4a;
+  --bg-noise: rgba(212, 186, 255, 0.025);
+
+  --board-light: #e0d4f0;
+  --board-dark: #6b4f9e;
+}
+
+.theme-ocean {
+  --wood-default: 30 42 58;
+  --wood-dark: 15 24 36;
+  --wood-light: 42 58 78;
+  --wood-panel: 24 36 46;
+  --wood-card: 29 42 62;
+  --wood-hover: 37 54 76;
+
+  --ink-default: 224 234 244;
+  --ink-2: 200 218 232;
+  --ink-3: 150 175 195;
+  --ink-4: 105 128 150;
+  --ink-5: 70 88 105;
+
+  --line: rgba(165, 214, 238, 0.10);
+  --line-2: rgba(165, 214, 238, 0.20);
+
+  --accent-default: 126 195 224;
+  --accent-ink: 165 214 238;
+  --accent-soft: rgba(126, 195, 224, 0.18);
+  --accent-softer: rgba(126, 195, 224, 0.08);
+
+  --bg-grad-1: rgba(126, 195, 224, 0.08);
+  --bg-grad-2: rgba(0, 0, 0, 0.35);
+  --bg-from: #284058;
+  --bg-mid: #0d1622;
+  --bg-to: #1e2a3a;
+  --bg-noise: rgba(180, 220, 240, 0.020);
+
+  --board-light: #d6e0ec;
+  --board-dark: #56708a;
+}
+
+.theme-lagoon {
+  --wood-default: 15 74 74;
+  --wood-dark: 8 47 47;
+  --wood-light: 22 96 96;
+  --wood-panel: 12 56 56;
+  --wood-card: 14 64 64;
+  --wood-hover: 19 80 80;
+
+  --ink-default: 222 250 240;
+  --ink-2: 200 240 226;
+  --ink-3: 140 200 184;
+  --ink-4: 95 145 132;
+  --ink-5: 60 100 90;
+
+  --line: rgba(136, 240, 213, 0.10);
+  --line-2: rgba(136, 240, 213, 0.20);
+
+  --accent-default: 94 235 202;
+  --accent-ink: 136 240 213;
+  --accent-soft: rgba(94, 235, 202, 0.18);
+  --accent-softer: rgba(94, 235, 202, 0.08);
+
+  --bg-grad-1: rgba(94, 235, 202, 0.06);
+  --bg-grad-2: rgba(0, 0, 0, 0.35);
+  --bg-from: #176464;
+  --bg-mid: #052525;
+  --bg-to: #0f4a4a;
+  --bg-noise: rgba(160, 240, 220, 0.025);
+
+  --board-light: #b8dccb;
+  --board-dark: #2c6e60;
+}
+
 :root {
   color-scheme: dark;
 }
@@ -16,31 +156,31 @@ body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
   font-feature-settings: 'cv11', 'ss01', 'ss03';
-  color: theme('colors.ink.DEFAULT');
-  background: theme('colors.wood.dark');
+  color: rgb(var(--ink-default));
+  background: rgb(var(--wood-dark));
   -webkit-font-smoothing: antialiased;
 }
 
-/* Wood-grain background for the app shell */
+/* Page background — themed via CSS vars. */
 .wood-bg {
-  background-color: #3b2317;
+  background-color: rgb(var(--wood-default));
   background-image:
-    radial-gradient(1200px 600px at 80% -200px, rgba(216, 181, 106, 0.06), transparent 60%),
-    radial-gradient(800px 400px at 0% 100%, rgba(0, 0, 0, 0.25), transparent 60%),
+    radial-gradient(1200px 600px at 80% -200px, var(--bg-grad-1), transparent 60%),
+    radial-gradient(800px 400px at 0% 100%, var(--bg-grad-2), transparent 60%),
     repeating-linear-gradient(
       92deg,
-      rgba(255, 220, 180, 0.025) 0px,
-      rgba(255, 220, 180, 0.025) 1px,
+      var(--bg-noise) 0px,
+      var(--bg-noise) 1px,
       transparent 1px,
       transparent 4px
     ),
-    linear-gradient(160deg, #4a2c1a 0%, #2d1a0e 60%, #3b2317 100%);
+    linear-gradient(160deg, var(--bg-from) 0%, var(--bg-mid) 60%, var(--bg-to) 100%);
 }
 
-/* Card primitive — used everywhere in the redesign */
+/* Card primitive */
 .cr-card {
   @apply bg-wood-card border border-line rounded-card shadow-card overflow-hidden;
-  background-image: linear-gradient(180deg, rgba(255, 220, 150, 0.025), transparent 40%);
+  background-image: linear-gradient(180deg, var(--accent-softer), transparent 40%);
 }
 
 .cr-card-hd {
@@ -52,7 +192,7 @@ body {
 }
 
 .cr-pill {
-  @apply text-[10.5px] font-medium text-ink-3 bg-line/60 px-2 py-[3px] rounded-full tracking-[0.02em];
+  @apply text-[10.5px] font-medium text-ink-3 bg-line px-2 py-[3px] rounded-full tracking-[0.02em];
 }
 
 .cr-pill-mono {
@@ -60,17 +200,17 @@ body {
 }
 
 .cr-chip {
-  @apply text-[10.5px] px-2 py-[3px] rounded-full bg-line/60 text-ink-2 font-medium border-0;
+  @apply text-[10.5px] px-2 py-[3px] rounded-full bg-line text-ink-2 font-medium border-0;
 }
 .cr-chip:hover {
-  @apply bg-line-2/80;
+  @apply bg-line-2;
 }
 
-/* Sticky header */
+/* Sticky header — uses themed wood-dark with translucency. */
 .cr-header {
-  background: rgba(36, 20, 16, 0.72);
+  background: rgb(var(--wood-dark) / 0.72);
   backdrop-filter: blur(20px);
-  border-bottom: 0.5px solid theme('colors.line.DEFAULT');
+  border-bottom: 0.5px solid var(--line);
 }
 
 /* Scrollbar */
@@ -109,8 +249,8 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: theme('colors.accent.DEFAULT');
-  border: 2px solid theme('colors.wood.card');
+  background: rgb(var(--accent-default));
+  border: 2px solid rgb(var(--wood-card));
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
@@ -118,7 +258,18 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: theme('colors.accent.DEFAULT');
-  border: 2px solid theme('colors.wood.card');
+  background: rgb(var(--accent-default));
+  border: 2px solid rgb(var(--wood-card));
   cursor: pointer;
+}
+
+/* Themed accent gradient for primary CTAs / accuracy bars */
+.accent-grad {
+  background-image: linear-gradient(90deg, rgb(var(--accent-default)), rgb(var(--accent-ink)));
+}
+
+/* Modal backdrop */
+.cr-backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
 }

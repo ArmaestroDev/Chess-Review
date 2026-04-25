@@ -98,9 +98,10 @@ function CoachAvatar() {
     <div
       className="flex-shrink-0 w-[30px] h-[30px] rounded-lg flex items-center justify-center text-accent-ink"
       style={{
-        background: 'linear-gradient(180deg, #2a2418, #1d1a14)',
+        background:
+          'linear-gradient(180deg, rgb(var(--wood-card)), rgb(var(--wood-dark)))',
         boxShadow:
-          'inset 0 1px 0 rgba(255, 220, 150, 0.18), 0 1px 2px rgba(0, 0, 0, 0.3)',
+          'inset 0 1px 0 var(--accent-soft), 0 1px 2px rgba(0, 0, 0, 0.3)',
       }}
       aria-hidden
     >
