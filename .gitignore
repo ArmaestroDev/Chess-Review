@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+.env
+.env.local
+*.log
+.DS_Store
+.vscode
+.idea
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# tsc-emitted artifacts of vite.config.ts (the .ts file is source-of-truth)
+frontend/vite.config.js
+frontend/vite.config.d.ts

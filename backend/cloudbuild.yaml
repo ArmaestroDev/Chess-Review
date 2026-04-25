@@ -1,0 +1,49 @@
+# Cloud Build pipeline for the backend Cloud Run service.
+# Wired up by a Cloud Build trigger that fires on pushes to `main` when
+# files under `backend/**` change.
+
+substitutions:
+  _SERVICE: chess-engine-backend
+  _REGION: us-central1
+  _REPO: cloud-run-source-deploy
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Build the image, tagged with both the commit SHA (immutable) and `latest`.
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+      - -f
+      - backend/Dockerfile
+      - backend
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}
+
+  # Deploy. Env vars (e.g. ALLOWED_ORIGINS) and CPU/memory/concurrency settings
+  # already exist on the service and are preserved across image-only updates.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --quiet
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
