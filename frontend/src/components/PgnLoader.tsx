@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import {
   fetchRecentGames,
   formatGameLabel,
@@ -30,7 +31,6 @@ export function PgnLoader({ onAnalyze, busy }: Props) {
   const [pgn, setPgn] = useState('');
   const [depth, setDepth] = useState(14);
 
-  // Chess.com state
   const [username, setUsername] = useState('');
   const [games, setGames] = useState<ChessComGame[]>([]);
   const [perspective, setPerspective] = useState('');
@@ -75,123 +75,149 @@ export function PgnLoader({ onAnalyze, busy }: Props) {
     if (selectedIdx !== null && games[selectedIdx]) {
       const game = games[selectedIdx];
       const persp: 'white' | 'black' =
-        game.white.username.toLowerCase() === perspective.toLowerCase() ? 'white' : 'black';
+        game.white.username.toLowerCase() === perspective.toLowerCase()
+          ? 'white'
+          : 'black';
       onAnalyze(game.pgn.trim(), depth, persp);
     }
   }
 
   const canAnalyze =
     !busy &&
-    (tab === 'pgn' ? pgn.trim().length > 0 : selectedIdx !== null && !!games[selectedIdx]);
+    (tab === 'pgn'
+      ? pgn.trim().length > 0
+      : selectedIdx !== null && !!games[selectedIdx]);
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <div className="flex rounded overflow-hidden border border-white/10 self-start">
-        <TabButton active={tab === 'chesscom'} onClick={() => setTab('chesscom')}>
-          chess.com
-        </TabButton>
-        <TabButton active={tab === 'pgn'} onClick={() => setTab('pgn')}>
-          Paste PGN
-        </TabButton>
+    <div className="cr-card">
+      <div className="cr-card-hd">
+        <div className="cr-card-title">Source</div>
       </div>
 
-      {tab === 'chesscom' ? (
-        <div className="flex flex-col gap-3">
-          <div className="text-sm text-stone-300">
-            Enter your chess.com username and pick a recent game.
+      {/* Tabs */}
+      <div className="flex gap-0.5 p-[3px] mx-4 bg-wood-dark/60 rounded-lg">
+        <TabBtn active={tab === 'chesscom'} onClick={() => setTab('chesscom')}>
+          chess.com
+        </TabBtn>
+        <TabBtn active={tab === 'pgn'} onClick={() => setTab('pgn')}>
+          Paste PGN
+        </TabBtn>
+      </div>
+
+      <div className="px-4 pt-3 pb-2">
+        {tab === 'chesscom' ? (
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[11.5px] text-ink-3 m-0">
+              Enter your chess.com username and pick a recent game.
+            </p>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void loadGames();
+                }}
+                placeholder="username"
+                className="flex-1 h-8 px-2.5 rounded-[7px] border border-line-2 bg-wood-dark/60 text-[12.5px] text-ink outline-none focus:border-accent focus:bg-wood-card focus:ring-2 focus:ring-accent-soft transition-all"
+                spellCheck={false}
+                autoComplete="off"
+              />
+              <button
+                type="button"
+                onClick={() => void loadGames()}
+                disabled={loadingGames || !username.trim()}
+                className="h-8 px-3 rounded-[7px] border border-line-2 bg-wood-card text-ink-2 text-[12px] font-medium hover:bg-wood-hover disabled:opacity-40"
+              >
+                {loadingGames ? 'Loading…' : 'Load'}
+              </button>
+            </div>
+
+            {chessComError && (
+              <div className="text-[11px] text-review-blunder">{chessComError}</div>
+            )}
+
+            {games.length > 0 && (
+              <label className="flex flex-col gap-1 text-[11.5px] text-ink-3">
+                Game
+                <select
+                  value={selectedIdx ?? 0}
+                  onChange={(e) => setSelectedIdx(parseInt(e.target.value, 10))}
+                  className="rounded-[7px] border border-line-2 bg-wood-dark/60 px-2 py-1.5 text-ink font-mono text-[11.5px] focus:outline-none focus:border-accent"
+                >
+                  {games.map((g, i) => (
+                    <option key={g.url} value={i} className="bg-wood-card">
+                      {formatGameLabel(g, perspective)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void loadGames();
-              }}
-              placeholder="username"
-              className="flex-1 rounded bg-black/40 border border-white/10 px-2 py-1.5 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        ) : (
+          <div className="flex flex-col gap-2">
+            <p className="text-[11.5px] text-ink-3 m-0">
+              Paste a PGN below.
+            </p>
+            <textarea
+              value={pgn}
+              onChange={(e) => setPgn(e.target.value)}
+              placeholder={'[Event "..."]\n1. e4 e5 2. Nf3 ...'}
+              className="h-32 resize-none rounded-[7px] bg-wood-dark/60 border border-line-2 p-2.5 text-ink-2 text-[11px] font-mono leading-snug focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft transition-all"
               spellCheck={false}
-              autoComplete="off"
             />
             <button
               type="button"
-              onClick={() => void loadGames()}
-              disabled={loadingGames || !username.trim()}
-              className="rounded bg-stone-100/95 hover:bg-stone-100 disabled:opacity-40 text-stone-900 text-sm font-bold px-3"
+              onClick={() => setPgn(SAMPLE_PGN)}
+              className="self-start text-[11px] text-accent-ink hover:text-accent underline-offset-2 hover:underline"
             >
-              {loadingGames ? 'Loading…' : 'Load games'}
+              Insert sample PGN
             </button>
           </div>
-
-          {chessComError && (
-            <div className="text-xs text-red-300">{chessComError}</div>
-          )}
-
-          {games.length > 0 && (
-            <label className="flex flex-col gap-1 text-sm text-stone-300">
-              Game
-              <select
-                value={selectedIdx ?? 0}
-                onChange={(e) => setSelectedIdx(parseInt(e.target.value, 10))}
-                className="rounded bg-black/40 border border-white/10 px-2 py-1.5 text-stone-100 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-amber-400"
-              >
-                {games.map((g, i) => (
-                  <option key={g.url} value={i} className="bg-stone-800">
-                    {formatGameLabel(g, perspective)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <div className="text-sm text-stone-300">
-            Paste a PGN below and click <span className="font-bold">Analyze</span>.
-          </div>
-          <textarea
-            value={pgn}
-            onChange={(e) => setPgn(e.target.value)}
-            placeholder={'[Event "..."]\n1. e4 e5 2. Nf3 ...'}
-            className="h-44 resize-none rounded bg-black/40 border border-white/10 p-2 text-stone-100 text-[13px] font-mono leading-snug focus:outline-none focus:ring-2 focus:ring-amber-400"
-            spellCheck={false}
-          />
-          <button
-            type="button"
-            onClick={() => setPgn(SAMPLE_PGN)}
-            className="self-start text-sm text-amber-300/90 hover:text-amber-200 underline-offset-2 hover:underline"
-          >
-            Insert sample PGN
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3">
-        <label className="text-sm text-stone-300">
-          Depth
-          <input
-            type="number"
-            min={6}
-            max={24}
-            value={depth}
-            onChange={(e) => setDepth(parseInt(e.target.value, 10) || 14)}
-            className="ml-2 w-16 rounded bg-black/40 border border-white/10 px-2 py-1 text-sm"
-          />
-        </label>
+        )}
       </div>
-      <button
-        type="button"
-        disabled={!canAnalyze}
-        onClick={startAnalyze}
-        className="rounded bg-emerald-600 hover:bg-emerald-500 disabled:bg-stone-600/40 disabled:text-stone-400 text-white font-bold py-2 px-4 transition-colors"
-      >
-        {busy ? 'Analyzing…' : 'Analyze'}
-      </button>
+
+      {/* Depth slider */}
+      <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 border-t border-line">
+        <span className="text-[11.5px] text-ink-3 font-medium">Depth</span>
+        <input
+          type="range"
+          min={6}
+          max={24}
+          value={depth}
+          onChange={(e) => setDepth(parseInt(e.target.value, 10) || 14)}
+          className="flex-1 cr-range"
+        />
+        <span className="font-mono text-[12px] font-semibold min-w-[18px] text-right">
+          {depth}
+        </span>
+      </div>
+
+      <div className="px-4 pb-4 pt-1">
+        <button
+          type="button"
+          disabled={!canAnalyze}
+          onClick={startAnalyze}
+          className="w-full h-[38px] rounded-[9px] flex items-center justify-center gap-2 text-[13px] font-semibold text-stone-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{
+            background: canAnalyze
+              ? 'linear-gradient(180deg, #d8b56a 0%, #b8862b 100%)'
+              : 'linear-gradient(180deg, #4a3a28 0%, #3b2c1e 100%)',
+            boxShadow: canAnalyze
+              ? 'inset 0 1px 0 rgba(255, 220, 150, 0.3), 0 2px 4px rgba(0, 0, 0, 0.4)'
+              : 'inset 0 1px 0 rgba(255, 220, 150, 0.06)',
+            color: canAnalyze ? '#1d1a14' : '#8a7d62',
+          }}
+        >
+          {busy && <Loader2 size={14} className="animate-spin" />}
+          {busy ? 'Analyzing…' : 'Analyze'}
+        </button>
+      </div>
     </div>
   );
 }
 
-function TabButton({
+function TabBtn({
   active,
   onClick,
   children,
@@ -205,10 +231,10 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={
-        'px-3 py-1.5 text-sm font-semibold transition-colors ' +
+        'flex-1 px-2.5 py-1.5 text-[11.5px] font-medium rounded-md transition-colors ' +
         (active
-          ? 'bg-amber-300 text-stone-900'
-          : 'bg-black/30 text-stone-200 hover:bg-black/40')
+          ? 'bg-wood-card text-ink shadow-card'
+          : 'text-ink-3 hover:text-ink')
       }
     >
       {children}

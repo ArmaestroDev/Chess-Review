@@ -57,7 +57,7 @@ export function EvalChart({
       : PADDING_X;
 
   return (
-    <div className="relative bg-black/60 rounded">
+    <div className="relative bg-wood-dark/60 rounded-[7px] border border-line overflow-hidden">
       <svg
         width={width}
         height={height}
@@ -75,12 +75,12 @@ export function EvalChart({
           x2={PADDING_X + innerW}
           y1={PADDING_Y + innerH / 2}
           y2={PADDING_Y + innerH / 2}
-          stroke="rgba(255,255,255,0.12)"
+          stroke="rgba(216,181,106,0.25)"
           strokeWidth={1}
         />
         {/* fill (white wins area) */}
-        <path d={path} fill="rgba(245,245,245,0.92)" />
-        <path d={linePath} stroke="rgba(0,0,0,0.6)" strokeWidth={1} fill="none" />
+        <path d={path} fill="rgba(245,232,200,0.85)" />
+        <path d={linePath} stroke="rgba(0,0,0,0.4)" strokeWidth={1} fill="none" />
         {/* points */}
         {points.map((p, i) => (
           <circle
@@ -89,7 +89,7 @@ export function EvalChart({
             cy={p.y}
             r={3}
             fill={classificationColor(p.m.classification)}
-            stroke="rgba(0,0,0,0.4)"
+            stroke="rgba(0,0,0,0.5)"
             strokeWidth={0.5}
             onClick={(e) => {
               e.stopPropagation();
@@ -106,7 +106,7 @@ export function EvalChart({
           x2={cursorX}
           y1={PADDING_Y}
           y2={PADDING_Y + innerH}
-          stroke="#f5b840"
+          stroke="#d8b56a"
           strokeWidth={2}
         />
       </svg>

@@ -2,7 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Board, type BoardArrow } from './components/Board';
 import { EvalBar } from './components/EvalBar';
-import { ReviewPanel } from './components/ReviewPanel';
+import { Header } from './components/Header';
+import { GameMeta as GameMetaCard } from './components/GameMeta';
+import { MovesCard } from './components/MovesCard';
+import { PlayerStrip } from './components/PlayerStrip';
+import { PgnLoader } from './components/PgnLoader';
+import { CommentBubble } from './components/CommentBubble';
+import { AccuracyCard } from './components/AccuracyCard';
+import { AnalyzingCard } from './components/AnalyzingCard';
+import { EvalChart } from './components/EvalChart';
 import { socket } from './socket';
 import type {
   AnalysisEvent,
@@ -137,10 +145,17 @@ function App() {
 
   useEffect(() => {
     function update() {
-      const panelW = window.innerWidth >= 1280 ? 420 : 380;
-      const reservedSides = 90;
-      const availW = window.innerWidth - panelW - reservedSides;
-      const availH = window.innerHeight - 130;
+      // 3-col grid: 320px left + center + 360px right, 20px gaps, 28px page
+      // padding each side. Eval bar + gap takes 32px from the center column.
+      const leftCol = 320;
+      const rightCol = 360;
+      const gaps = 40;
+      const horizPad = 56;
+      const evalGap = 32;
+      const usableW = Math.min(window.innerWidth, 1600);
+      const availW = usableW - leftCol - rightCol - gaps - horizPad - evalGap;
+      // Header (~64) + top/bottom player strips (~120 incl. gaps) + page padding.
+      const availH = window.innerHeight - 64 - 120 - 40;
       const size = Math.max(320, Math.min(availW, availH, 720));
       setBoardSize(Math.floor(size));
     }
@@ -509,23 +524,62 @@ function App() {
 
   const canShowBest = !!currentMove?.bestMoveUci && !isPending;
   const allowDrag = status === 'ready' || freePlay;
+  const showLoader = status === 'idle' && mainlineMoves.length === 0;
+  const showAnalyzing = status === 'loading' || status === 'analyzing';
+  const hasGame = !showLoader;
+  const sideToMove = (displayedFen.split(' ')[1] ?? 'w') as 'w' | 'b';
+  const playerToMove: 'white' | 'black' = sideToMove === 'w' ? 'white' : 'black';
+  const expectedTotal =
+    meta.totalPlies > 0 ? meta.totalPlies : Math.max(mainlineCount, 1);
 
   return (
-    <div className="h-full wood-bg flex">
-      {/* Left side: board + eval bar + player labels */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="flex flex-col items-stretch gap-2" style={{ width: boardSize + 36 }}>
-          <div className="pl-9">
-            <PlayerLabel
-              name={playerLabel.top}
-              rating={playerLabel.topRating}
-              color={playerLabel.topColor}
-            />
-          </div>
-          <div className="flex gap-3 items-stretch">
-            <div style={{ height: boardSize, width: 24 }}>
-              <EvalBar evalWhite={evalForBar} orientation={orientation} />
-            </div>
+    <div className="min-h-screen wood-bg flex flex-col">
+      <Header
+        onReset={handleReset}
+        onFlipBoard={toggleOrientation}
+        onToggleMute={toggleMute}
+        muted={muted}
+        hasGame={hasGame}
+      />
+
+      <main className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start">
+        {/* LEFT — game meta + moves */}
+        <div className="flex flex-col gap-4 min-w-0">
+          <GameMetaCard meta={meta} hasGame={hasGame} />
+          <MovesCard
+            tree={tree}
+            currentNodeId={currentNodeId}
+            isPlaying={isPlaying}
+            onSelectNode={selectNode}
+            onJumpFirst={goFirst}
+            onJumpPrev={goPrev}
+            onJumpNext={goNext}
+            onJumpLast={goLast}
+            onTogglePlay={() => setIsPlaying((p) => !p)}
+            onShowBest={() => setShowingBest((s) => !s)}
+            showingBest={showingBest}
+            canShowBest={canShowBest}
+          />
+        </div>
+
+        {/* CENTER — player strips + eval + board */}
+        <div className="flex flex-col gap-2.5 items-stretch min-w-0">
+          <PlayerStrip
+            color={playerLabel.topColor}
+            name={playerLabel.top}
+            rating={playerLabel.topRating}
+            accuracy={
+              playerLabel.topColor === 'white'
+                ? meta.whiteAccuracy
+                : meta.blackAccuracy
+            }
+            active={hasGame && playerToMove === playerLabel.topColor}
+          />
+          <div
+            className="grid gap-2.5 items-stretch"
+            style={{ gridTemplateColumns: '22px 1fr', height: boardSize }}
+          >
+            <EvalBar evalWhite={evalForBar} orientation={orientation} />
             <Board
               fen={displayedFen}
               size={boardSize}
@@ -536,53 +590,84 @@ function App() {
               onMove={allowDrag ? handlePieceMove : undefined}
             />
           </div>
-          <div className="pl-9">
-            <PlayerLabel
-              name={playerLabel.bottom}
-              rating={playerLabel.bottomRating}
-              color={playerLabel.bottomColor}
-            />
-          </div>
+          <PlayerStrip
+            color={playerLabel.bottomColor}
+            name={playerLabel.bottom}
+            rating={playerLabel.bottomRating}
+            accuracy={
+              playerLabel.bottomColor === 'white'
+                ? meta.whiteAccuracy
+                : meta.blackAccuracy
+            }
+            active={hasGame && playerToMove === playerLabel.bottomColor}
+          />
         </div>
-      </div>
 
-      <div className="h-full">
-        <ReviewPanel
-          tree={tree}
-          currentNodeId={currentNodeId}
-          currentMove={currentMove}
-          isPending={isPending}
-          mainlineMoves={mainlineMoves}
-          chartCurrentPly={chartCurrentPly}
-          mainlineCount={mainlineCount}
-          status={status}
-          meta={meta}
-          isPlaying={isPlaying}
-          onSelectNode={selectNode}
-          onJumpFirst={goFirst}
-          onJumpPrev={goPrev}
-          onJumpNext={goNext}
-          onJumpLast={goLast}
-          onTogglePlay={() => setIsPlaying((p) => !p)}
-          onShowBest={() => setShowingBest((s) => !s)}
-          showingBest={showingBest}
-          canShowBest={canShowBest}
-          onAnalyze={handleAnalyze}
-          onReset={handleReset}
-          muted={muted}
-          onToggleMute={toggleMute}
-          onFlipBoard={toggleOrientation}
-        />
-      </div>
+        {/* RIGHT — source / coach / accuracy / chart */}
+        <div className="flex flex-col gap-4 min-w-0">
+          {showLoader ? (
+            <PgnLoader onAnalyze={handleAnalyze} busy={false} />
+          ) : showAnalyzing ? (
+            <AnalyzingCard
+              done={mainlineCount}
+              total={expectedTotal}
+              onCancel={handleReset}
+            />
+          ) : (
+            <CommentBubble move={isPending ? null : currentMove} />
+          )}
+
+          <AccuracyCard
+            whiteAccuracy={meta.whiteAccuracy}
+            blackAccuracy={meta.blackAccuracy}
+          />
+
+          {mainlineMoves.length > 0 && (
+            <div className="cr-card">
+              <div className="cr-card-hd">
+                <div className="cr-card-title">Eval over time</div>
+              </div>
+              <div className="px-4 pb-4">
+                <EvalChart
+                  moves={mainlineMoves}
+                  totalPlies={expectedTotal}
+                  currentPly={chartCurrentPly}
+                  onSelect={(ply) => {
+                    const id = mainlineNodeIdForPly(tree, ply);
+                    if (id) selectNode(id);
+                  }}
+                  width={328}
+                  height={70}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
 
       {error && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-700/90 text-white px-4 py-2 rounded shadow-lg max-w-[80%]">
-          <div className="font-bold mb-0.5">Analysis failed</div>
+        <div
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg shadow-card-md max-w-[80%]"
+          style={{ background: 'rgba(214, 68, 58, 0.95)', color: '#fdfbf5' }}
+          role="alert"
+        >
+          <div className="font-semibold mb-0.5">Analysis failed</div>
           <div className="text-sm">{error}</div>
         </div>
       )}
     </div>
   );
+}
+
+function mainlineNodeIdForPly(tree: MoveTree, ply: number): NodeId | null {
+  let cur = tree.nodes[tree.rootId];
+  while (cur) {
+    if (cur.move?.ply === ply) return cur.id;
+    const next = cur.childrenIds[0];
+    if (!next) break;
+    cur = tree.nodes[next];
+  }
+  return null;
 }
 
 function emptyMeta(): GameMeta {
@@ -631,35 +716,6 @@ function buildPlaceholderMove(
     classification: 'ok',
     wpLoss: 0,
   };
-}
-
-function PlayerLabel({
-  name,
-  rating,
-  color,
-}: {
-  name: string;
-  rating: string | null;
-  color: 'white' | 'black';
-}) {
-  return (
-    <div className="flex items-center gap-3 text-stone-100 px-1">
-      <div
-        className={
-          'w-9 h-9 rounded grid place-items-center ring-1 ring-black/30 shrink-0 ' +
-          (color === 'white' ? 'bg-stone-100 text-stone-900' : 'bg-stone-900 text-stone-100')
-        }
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M12 12c2.5 0 4-2 4-4.5S14.5 3 12 3 8 5 8 7.5 9.5 12 12 12zm0 2c-3.3 0-8 1.6-8 5v2h16v-2c0-3.4-4.7-5-8-5z" />
-        </svg>
-      </div>
-      <div className="flex items-baseline gap-2 font-bold">
-        <span>{name}</span>
-        {rating && <span className="text-stone-300 font-medium">({rating})</span>}
-      </div>
-    </div>
-  );
 }
 
 export default App;

@@ -64,7 +64,15 @@ export function Board({
   const draggable = !!onMove;
 
   return (
-    <div className="relative board-wrap" style={{ width: size, height: size }}>
+    <div
+      className="relative board-wrap rounded-[10px] overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        boxShadow:
+          'inset 0 1px 0 rgba(255,220,150,0.06), 0 8px 30px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(245,232,200,0.10)',
+      }}
+    >
       <Chessboard
         id="review-board"
         position={fen}
@@ -72,13 +80,13 @@ export function Board({
         boardOrientation={orientation}
         arePiecesDraggable={draggable}
         animationDuration={150}
-        customDarkSquareStyle={{ backgroundColor: '#7c7ac6' }}
-        customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+        customDarkSquareStyle={{ backgroundColor: '#8c6f4f' }}
+        customLightSquareStyle={{ backgroundColor: '#ebd8b7' }}
         customSquareStyles={customSquareStyles}
         customArrows={customArrows as any}
         customBoardStyle={{
-          borderRadius: 4,
-          boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+          borderRadius: 10,
+          boxShadow: 'none',
         }}
         isDraggablePiece={
           draggable

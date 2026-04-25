@@ -23,7 +23,7 @@ export function MoveList({ tree, currentNodeId, onSelectNode }: Props) {
   }, [currentNodeId]);
 
   const rows = useMemo<Row[]>(() => {
-    const ids = fullMainline(tree).slice(1); // skip root
+    const ids = fullMainline(tree).slice(1);
     const out: Row[] = [];
     for (const id of ids) {
       const m = tree.nodes[id]?.move;
@@ -36,15 +36,13 @@ export function MoveList({ tree, currentNodeId, onSelectNode }: Props) {
     return out;
   }, [tree]);
 
-  // Branches off the root (alt for white's first move) get rendered before
-  // any mainline rows.
   const rootBranchIds = (tree.nodes[tree.rootId]?.childrenIds ?? []).slice(1);
 
   return (
-    <div className="overflow-y-auto scrollbar-thin px-3 py-1 text-[15px]">
+    <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-1">
       {rows.length === 0 && (
-        <div className="text-stone-400/70 py-4 text-center text-sm">
-          Moves will appear here once analysis starts.
+        <div className="text-ink-4 py-6 text-center text-[11.5px]">
+          Moves appear here once analysis starts.
         </div>
       )}
 
@@ -61,8 +59,10 @@ export function MoveList({ tree, currentNodeId, onSelectNode }: Props) {
 
       {rows.map((row) => (
         <div key={row.moveNumber}>
-          <div className="grid grid-cols-[2.5rem_1fr_1fr] items-center py-[3px]">
-            <div className="text-stone-400 font-semibold">{row.moveNumber}.</div>
+          <div className="grid grid-cols-[28px_1fr_1fr] gap-1 items-center py-px">
+            <div className="font-mono text-[11px] text-ink-4 text-right pr-1">
+              {row.moveNumber}.
+            </div>
             <MoveCell
               nodeId={row.whiteId}
               tree={tree}
@@ -128,7 +128,6 @@ function BranchLine({
   onSelectNode,
   activeRef,
 }: BranchLineProps) {
-  // Walk the branch's children[0] chain to collect the moves shown inline.
   const nodes: MoveNode[] = [];
   let cur: MoveNode | undefined = tree.nodes[branchRootId];
   while (cur) {
@@ -139,7 +138,7 @@ function BranchLine({
   }
 
   return (
-    <div className="pl-9 pr-2 py-[3px] text-[13px] flex items-center gap-1 flex-wrap border-l-2 border-stone-500/30 ml-3">
+    <div className="pl-9 pr-2 py-px text-[11px] flex items-center gap-1 flex-wrap border-l-2 border-line ml-3">
       {nodes.map((node, i) => {
         const m = node.move;
         if (!m) return null;
@@ -152,7 +151,7 @@ function BranchLine({
         return (
           <span key={node.id} className="inline-flex items-center gap-1">
             {numberLabel && (
-              <span className="text-stone-400 font-semibold">{numberLabel}</span>
+              <span className="text-ink-4 font-mono font-semibold">{numberLabel}</span>
             )}
             <button
               ref={active ? activeRef : null}
@@ -161,17 +160,17 @@ function BranchLine({
               className={
                 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ' +
                 (active
-                  ? 'bg-stone-100 text-stone-900 font-bold'
+                  ? 'bg-accent-soft text-accent-ink font-semibold'
                   : node.pending
-                    ? 'text-stone-300/70 italic hover:bg-white/10'
-                    : 'text-amber-200/90 hover:bg-white/10 font-semibold')
+                    ? 'text-ink-3 italic hover:bg-line/40'
+                    : 'text-ink-2 hover:bg-line/40 font-medium')
               }
               title={node.pending ? 'Analyzing…' : undefined}
             >
               {!node.pending && (
-                <ClassificationIcon classification={m.classification} size={14} />
+                <ClassificationIcon classification={m.classification} size={12} />
               )}
-              <span>{m.san}</span>
+              <span className="font-mono">{m.san}</span>
             </button>
           </span>
         );
@@ -202,14 +201,14 @@ const MoveCell = forwardRef<HTMLButtonElement, CellProps>(function MoveCell(
       type="button"
       onClick={() => onSelectNode(nodeId)}
       className={
-        'flex items-center gap-1.5 px-2 py-0.5 rounded text-left transition-colors ' +
+        'flex items-center gap-1.5 px-2 py-[5px] rounded-md text-left border transition-colors ' +
         (active
-          ? 'bg-stone-100 text-stone-900 font-bold'
-          : 'text-stone-100 hover:bg-white/10 font-semibold')
+          ? 'bg-accent-soft border-accent text-accent-ink font-semibold'
+          : 'border-transparent hover:bg-line/40 text-ink')
       }
     >
-      <ClassificationIcon classification={m.classification} size={16} />
-      <span>{m.san}</span>
+      <ClassificationIcon classification={m.classification} size={14} />
+      <span className="font-mono text-[12px] font-medium">{m.san}</span>
     </button>
   );
 });
