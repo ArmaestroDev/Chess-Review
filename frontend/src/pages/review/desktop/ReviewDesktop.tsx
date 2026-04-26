@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpDown, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowUpDown } from 'lucide-react';
 import { Board } from '../../../shared/components/Board';
 import { IconBtn } from '../../../shared/components/IconBtn';
 import { EvalBar } from './components/EvalBar';
-import { GameMeta as GameMetaCard } from '../components/GameMeta';
 import { MovesCard } from '../components/MovesCard';
 import { PlayerStrip } from '../../../shared/components/PlayerStrip';
 import { PgnLoader } from '../components/PgnLoader';
 import { CommentBubble } from '../components/CommentBubble';
 import { AccuracyCard } from '../components/AccuracyCard';
 import { AnalyzingCard } from '../components/AnalyzingCard';
+import { ChessComStatsCard } from '../components/ChessComStatsCard';
 import { EvalChart } from './components/EvalChart';
 import type { Settings as AppSettings } from '../../../shared/utils/settings';
 import { mainlineNodeIdForPly } from '../useReviewState';
 import type { ReviewState } from '../useReviewState';
+import type { ChessComProfileState } from '../useChessComProfile';
 
 interface Props {
   settings: AppSettings;
@@ -23,9 +24,16 @@ interface Props {
   // Owned by the wrapper (ReviewPage) so it survives the desktop/mobile
   // breakpoint cross — see useReviewState.ts and ReviewPage.tsx.
   review: ReviewState;
+  chessCom: ChessComProfileState;
 }
 
-export function ReviewDesktop({ settings, orientation, setOrientation, review }: Props) {
+export function ReviewDesktop({
+  settings,
+  orientation,
+  setOrientation,
+  review,
+  chessCom,
+}: Props) {
   const { t } = useTranslation();
   const flipBoard = () => setOrientation(orientation === 'white' ? 'black' : 'white');
 
@@ -52,24 +60,48 @@ export function ReviewDesktop({ settings, orientation, setOrientation, review }:
 
   return (
     <>
-      <main className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start">
-        {/* LEFT — game meta + moves */}
-        <div className="flex flex-col gap-4 min-w-0">
-          <GameMetaCard meta={review.meta} hasGame={review.hasGame} />
-          <MovesCard
-            tree={review.tree}
-            currentNodeId={review.currentNodeId}
-            isPlaying={review.isPlaying}
-            onSelectNode={review.selectNode}
-            onJumpFirst={review.goFirst}
-            onJumpPrev={review.goPrev}
-            onJumpNext={review.goNext}
-            onJumpLast={review.goLast}
-            onTogglePlay={review.togglePlay}
-            onShowBest={review.toggleShowBest}
-            showingBest={review.showingBest}
-            canShowBest={review.canShowBest}
-          />
+      <main className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full">
+        {/* LEFT — back/greeting slot + moves OR chess.com stats (fills column) */}
+        <div className="flex flex-col gap-3 min-w-0 min-h-0">
+          {review.hasGame ? (
+            <button
+              type="button"
+              onClick={review.handleReset}
+              className="pz-hub-slot pz-hub-slot--back"
+            >
+              <ArrowLeft size={14} />
+              {t('review.actions.backToStart')}
+            </button>
+          ) : (
+            <div className="pz-hub-slot">
+              {t('puzzles.hub.greeting', {
+                name:
+                  settings.chessComUsername.trim() ||
+                  t('puzzles.hub.unknownUser'),
+              })}
+            </div>
+          )}
+          {review.hasGame ? (
+            <div className="flex-1 min-h-0">
+              <MovesCard
+                tree={review.tree}
+                currentNodeId={review.currentNodeId}
+                isPlaying={review.isPlaying}
+                onSelectNode={review.selectNode}
+                onJumpFirst={review.goFirst}
+                onJumpPrev={review.goPrev}
+                onJumpNext={review.goNext}
+                onJumpLast={review.goLast}
+                onTogglePlay={review.togglePlay}
+                onShowBest={review.toggleShowBest}
+                showingBest={review.showingBest}
+                canShowBest={review.canShowBest}
+                fill
+              />
+            </div>
+          ) : (
+            <ChessComStatsCard state={chessCom} />
+          )}
         </div>
 
         {/* CENTER — player strips + eval + board */}
@@ -105,11 +137,6 @@ export function ReviewDesktop({ settings, orientation, setOrientation, review }:
                 <IconBtn onClick={flipBoard} title={t('header.actions.flipBoard')}>
                   <ArrowUpDown size={16} />
                 </IconBtn>
-                {review.hasGame && (
-                  <IconBtn onClick={review.handleReset} title={t('review.actions.clear')}>
-                    <Trash2 size={16} />
-                  </IconBtn>
-                )}
               </div>
             </div>
             <PlayerStrip
@@ -129,7 +156,7 @@ export function ReviewDesktop({ settings, orientation, setOrientation, review }:
             <PgnLoader
               onAnalyze={review.handleAnalyze}
               busy={false}
-              defaultUsername={settings.chessComUsername}
+              chessCom={chessCom}
             />
           ) : review.showAnalyzing ? (
             <AnalyzingCard

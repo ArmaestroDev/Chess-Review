@@ -1,16 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, Equal, Minus, Plus, Timer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
-  fetchRecentGames,
-  formatGameLabel,
+  describeResult,
   type ChessComGame,
 } from '../../../shared/utils/chessCom';
+import type { ChessComProfileState } from '../useChessComProfile';
 
 interface Props {
   onAnalyze: (pgn: string, depth: number, perspective?: 'white' | 'black') => void;
   busy: boolean;
-  defaultUsername?: string;
+  /**
+   * Lifted chess.com state — username input, fetched profile/stats/games,
+   * loading/error flags. The loader drives loads via `chessCom.load()`;
+   * the start-page stats card reads the same state.
+   */
+  chessCom: ChessComProfileState;
 }
 
 const SAMPLE_PGN = `[Event "Sample"]
@@ -28,61 +33,47 @@ const SAMPLE_PGN = `[Event "Sample"]
 
 type Tab = 'chesscom' | 'pgn';
 
-export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
-  const { t } = useTranslation();
+export function PgnLoader({ onAnalyze, busy, chessCom }: Props) {
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<Tab>('chesscom');
   const [pgn, setPgn] = useState('');
   const [depth, setDepth] = useState(14);
-
-  const [username, setUsername] = useState(defaultUsername ?? '');
-  const [games, setGames] = useState<ChessComGame[]>([]);
-  const [perspective, setPerspective] = useState('');
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const [loadingGames, setLoadingGames] = useState(false);
-  const [chessComError, setChessComError] = useState<string | null>(null);
 
-  // Auto-load whenever a default username is set (and changes via Settings).
-  // Tracked via a ref so we don't re-fetch when the user manually edits the
-  // input or `loadGames` redefines below.
-  const lastAutoLoadedFor = useRef<string | null>(null);
-  useEffect(() => {
-    const u = (defaultUsername ?? '').trim();
-    if (!u) return;
-    if (lastAutoLoadedFor.current === u) return;
-    lastAutoLoadedFor.current = u;
-    setUsername(u);
-    void loadGamesFor(u);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultUsername]);
+  const username = chessCom.usernameInput;
+  const games = chessCom.games;
+  const loadingGames = chessCom.loading;
+  const perspective = chessCom.committedUsername;
 
-  async function loadGamesFor(u: string) {
-    if (!u) return;
-    setLoadingGames(true);
-    setChessComError(null);
-    setGames([]);
-    setSelectedIdx(null);
-    try {
-      const result = await fetchRecentGames(u, 30);
-      if (result.length === 0) {
-        setChessComError(t('review.source.chesscom.noGames', { username: u }));
-      } else {
-        setGames(result);
-        setPerspective(u);
-        setSelectedIdx(0);
-      }
-    } catch (err) {
-      const msg =
-        (err as Error & { code?: string }).code === 'not_found'
-          ? t('review.source.chesscom.userNotFound', { username: u })
-          : (err as Error).message || t('review.source.chesscom.loadFailed');
-      setChessComError(msg);
-    } finally {
-      setLoadingGames(false);
+  const chessComError = (() => {
+    if (chessCom.error === 'not_found' && chessCom.committedUsername) {
+      return t('review.source.chesscom.userNotFound', {
+        username: chessCom.committedUsername,
+      });
     }
-  }
+    if (chessCom.error === 'failed') return t('review.source.chesscom.loadFailed');
+    if (
+      !chessCom.loading &&
+      chessCom.committedUsername &&
+      games.length === 0 &&
+      !chessCom.error
+    ) {
+      return t('review.source.chesscom.noGames', {
+        username: chessCom.committedUsername,
+      });
+    }
+    return null;
+  })();
+
+  // Reset selection when a fresh games array arrives. The hook clears `games`
+  // to [] before each load and refills on success; we just follow.
+  useEffect(() => {
+    if (games.length > 0) setSelectedIdx(0);
+    else setSelectedIdx(null);
+  }, [games]);
 
   async function loadGames() {
-    await loadGamesFor(username.trim());
+    await chessCom.load(username.trim());
   }
 
   function startAnalyze() {
@@ -134,7 +125,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => chessCom.setUsernameInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void loadGames();
                 }}
@@ -160,20 +151,25 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
             )}
 
             {games.length > 0 && (
-              <label className="flex flex-col gap-1 text-[11.5px] text-ink-3">
-                {t('review.source.chesscom.gameLabel')}
-                <select
-                  value={selectedIdx ?? 0}
-                  onChange={(e) => setSelectedIdx(parseInt(e.target.value, 10))}
-                  className="rounded-[7px] border border-line-2 bg-wood-dark/60 px-2 py-1.5 text-ink font-mono text-[11.5px] focus:outline-none focus:border-accent"
-                >
-                  {games.map((g, i) => (
-                    <option key={g.url} value={i} className="bg-wood-card">
-                      {formatGameLabel(g, perspective)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11.5px] text-ink-3">
+                  {t('review.source.chesscom.gameLabel')}
+                </span>
+                <div className="rounded-[8px] border border-line-2 bg-wood-dark/40 overflow-hidden">
+                  <div className="max-h-[280px] overflow-y-auto">
+                    {games.map((g, i) => (
+                      <GameRow
+                        key={g.url}
+                        game={g}
+                        perspective={perspective}
+                        selected={selectedIdx === i}
+                        lang={i18n.language}
+                        onClick={() => setSelectedIdx(i)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         ) : (
@@ -239,6 +235,104 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
         </button>
       </div>
     </div>
+  );
+}
+
+function GameRow({
+  game,
+  perspective,
+  selected,
+  lang,
+  onClick,
+}: {
+  game: ChessComGame;
+  perspective: string;
+  selected: boolean;
+  lang: string;
+  onClick: () => void;
+}) {
+  const result = describeResult(game, perspective);
+  const date = new Date(game.end_time * 1000).toLocaleDateString(lang, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        'w-full grid items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-line last:border-b-0 ' +
+        (selected ? 'bg-accent-soft' : 'hover:bg-wood-hover')
+      }
+      style={{ gridTemplateColumns: '20px minmax(0, 1fr) auto auto' }}
+    >
+      <Timer size={16} className="text-ink-3 shrink-0" />
+      <div className="min-w-0 leading-tight">
+        <PlayerLine color="white" name={game.white.username} rating={game.white.rating} />
+        <PlayerLine color="black" name={game.black.username} rating={game.black.rating} />
+      </div>
+      <span className="text-[11.5px] text-ink-3 font-medium whitespace-nowrap">
+        {date}
+      </span>
+      <ResultChip result={result} />
+    </button>
+  );
+}
+
+function PlayerLine({
+  color,
+  name,
+  rating,
+}: {
+  color: 'white' | 'black';
+  name: string;
+  rating: number;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 text-[12px]">
+      <span
+        className="w-2.5 h-2.5 rounded-full shrink-0 border border-line-2"
+        style={{ background: color === 'white' ? '#f5f1e8' : '#1d1a14' }}
+        aria-hidden
+      />
+      <span className="font-medium truncate text-ink">{name}</span>
+      <span className="text-ink-3">({rating})</span>
+    </div>
+  );
+}
+
+function ResultChip({ result }: { result: 'win' | 'loss' | 'draw' }) {
+  if (result === 'win') {
+    return (
+      <span
+        className="inline-flex items-center justify-center w-6 h-6 rounded-md text-white"
+        style={{ background: 'rgba(80, 130, 30, 0.85)' }}
+        aria-label="win"
+      >
+        <Plus size={14} strokeWidth={3} />
+      </span>
+    );
+  }
+  if (result === 'loss') {
+    return (
+      <span
+        className="inline-flex items-center justify-center w-6 h-6 rounded-md text-white"
+        style={{ background: 'rgba(190, 60, 50, 0.85)' }}
+        aria-label="loss"
+      >
+        <Minus size={14} strokeWidth={3} />
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center justify-center w-6 h-6 rounded-md text-white"
+      style={{ background: 'rgba(140, 130, 110, 0.7)' }}
+      aria-label="draw"
+    >
+      <Equal size={14} strokeWidth={3} />
+    </span>
   );
 }
 

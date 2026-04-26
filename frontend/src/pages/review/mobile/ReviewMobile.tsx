@@ -11,8 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { Board } from '../../../shared/components/Board';
 import { EvalBar } from '../desktop/components/EvalBar';
 import { usePublishMobileTopBarActions } from '../../../shared/components/MobileTopBarContext';
-import type { Settings as AppSettings } from '../../../shared/utils/settings';
 import type { ReviewState } from '../useReviewState';
+import type { ChessComProfileState } from '../useChessComProfile';
 import { GameMeta as GameMetaCard } from '../components/GameMeta';
 import { MovesCard } from '../components/MovesCard';
 import { PgnLoader } from '../components/PgnLoader';
@@ -23,15 +23,20 @@ import { AnalyzingCard } from '../components/AnalyzingCard';
 type Tab = 'moves' | 'stats' | 'comment';
 
 interface Props {
-  settings: AppSettings;
   orientation: 'white' | 'black';
   setOrientation: (o: 'white' | 'black') => void;
   // Owned by the wrapper (ReviewPage) so it survives the desktop/mobile
   // breakpoint cross — see useReviewState.ts and ReviewPage.tsx.
   review: ReviewState;
+  chessCom: ChessComProfileState;
 }
 
-export function ReviewMobile({ settings, orientation, setOrientation, review }: Props) {
+export function ReviewMobile({
+  orientation,
+  setOrientation,
+  review,
+  chessCom,
+}: Props) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('moves');
 
@@ -74,7 +79,7 @@ export function ReviewMobile({ settings, orientation, setOrientation, review }: 
           <PgnLoader
             onAnalyze={review.handleAnalyze}
             busy={false}
-            defaultUsername={settings.chessComUsername}
+            chessCom={chessCom}
           />
         )}
 

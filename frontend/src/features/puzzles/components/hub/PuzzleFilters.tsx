@@ -1,69 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { THEMES, pickFromMultiSelect } from '../../api/catalog';
+import { pickFromMultiSelect } from '../../api/catalog';
 import { ALL_TIERS } from '../../utils/difficulty';
+import {
+  SKILL_THEMES,
+  loadPersistedFilters,
+  savePersistedFilters,
+} from '../../utils/filters';
 import { useThemeNames, useTierLabel } from '../../utils/i18nHelpers';
 import type { Tier } from '../../types';
-
-// Descriptor themes that aren't useful as filters — same set as the old
-// ThemeGrid filtered out.
-const FILTER_THEMES = new Set([
-  'short',
-  'long',
-  'veryLong',
-  'oneMove',
-  'crushing',
-  'advantage',
-  'mate',
-  'master',
-  'masterVsMaster',
-  'middlegame',
-  'endgame',
-  'opening',
-]);
-
-const STORAGE_KEY = 'chess-engine-puzzle-filters';
-
-interface PersistedFilters {
-  tiers: Tier[];
-  themes: string[];
-}
-
-// Returns null when nothing has been persisted — lets the caller distinguish
-// "fresh user" (apply auto-defaults) from "user explicitly deselected
-// everything" (honor the empty selection).
-function loadFilters(validThemes: ReadonlyArray<string>): PersistedFilters | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<PersistedFilters>;
-    const tierSet = new Set(ALL_TIERS as ReadonlyArray<string>);
-    const themeSet = new Set(validThemes);
-    return {
-      tiers: Array.isArray(parsed.tiers)
-        ? (parsed.tiers.filter(
-            (s): s is Tier => typeof s === 'string' && tierSet.has(s),
-          ) as Tier[])
-        : [],
-      themes: Array.isArray(parsed.themes)
-        ? parsed.themes.filter(
-            (s): s is string => typeof s === 'string' && themeSet.has(s),
-          )
-        : [],
-    };
-  } catch {
-    return null;
-  }
-}
-
-function saveFilters(f: PersistedFilters): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(f));
-  } catch {
-    /* ignore */
-  }
-}
 
 interface Props {
   excludeIds: ReadonlyArray<string>;
@@ -75,11 +21,6 @@ export function PuzzleFilters({ excludeIds, defaultTier }: Props) {
   const { t } = useTranslation();
   const tierLabel = useTierLabel();
   const themeName = useThemeNames();
-
-  const skillThemes = useMemo(
-    () => THEMES.filter((th) => !FILTER_THEMES.has(th.name)).map((th) => th.name),
-    [],
-  );
 
   const [selectedTiers, setSelectedTiers] = useState<ReadonlySet<Tier>>(
     () => new Set<Tier>(),
@@ -96,24 +37,24 @@ export function PuzzleFilters({ excludeIds, defaultTier }: Props) {
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
-    const persisted = loadFilters(skillThemes);
+    const persisted = loadPersistedFilters();
     if (persisted === null) {
       setSelectedTiers(
         defaultTier ? new Set<Tier>([defaultTier]) : new Set<Tier>(ALL_TIERS),
       );
-      setSelectedThemes(new Set<string>(skillThemes));
+      setSelectedThemes(new Set<string>(SKILL_THEMES));
     } else {
       setSelectedTiers(new Set(persisted.tiers));
       setSelectedThemes(new Set(persisted.themes));
     }
     setHydrated(true);
-  }, [skillThemes, defaultTier]);
+  }, [defaultTier]);
 
   // Persist whenever the user toggles something — but only after hydration so
   // we don't immediately overwrite saved state with the empty initial set.
   useEffect(() => {
     if (!hydrated) return;
-    saveFilters({
+    savePersistedFilters({
       tiers: Array.from(selectedTiers),
       themes: Array.from(selectedThemes),
     });
@@ -146,8 +87,8 @@ export function PuzzleFilters({ excludeIds, defaultTier }: Props) {
     [],
   );
   const selectAllThemes = useCallback(
-    () => setSelectedThemes(new Set<string>(skillThemes)),
-    [skillThemes],
+    () => setSelectedThemes(new Set<string>(SKILL_THEMES)),
+    [],
   );
   const deselectAllThemes = useCallback(
     () => setSelectedThemes(new Set<string>()),
@@ -218,13 +159,13 @@ export function PuzzleFilters({ excludeIds, defaultTier }: Props) {
               {t('puzzles.hub.filters.themes')}
             </div>
             <SelectAllControls
-              allOn={selectedThemes.size === skillThemes.length}
+              allOn={selectedThemes.size === SKILL_THEMES.length}
               onSelectAll={selectAllThemes}
               onDeselectAll={deselectAllThemes}
             />
           </div>
           <div className="pz-filter-themes">
-            {skillThemes.map((theme) => (
+            {SKILL_THEMES.map((theme) => (
               <ThemeTile
                 key={theme}
                 label={themeName(theme)}

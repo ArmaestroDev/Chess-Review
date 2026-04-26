@@ -33,6 +33,8 @@ interface Props {
    * tab strip.
    */
   compact?: boolean;
+  /** When true, the card stretches to its parent's height (parent must size). */
+  fill?: boolean;
 }
 
 export function MovesCard({
@@ -49,6 +51,7 @@ export function MovesCard({
   showingBest,
   canShowBest,
   compact,
+  fill,
 }: Props) {
   const { t } = useTranslation();
   const totalPlies = Math.max(0, fullMainline(tree).length - 1);
@@ -60,7 +63,10 @@ export function MovesCard({
   const maxHeight = compact ? 'calc(100vh - 540px)' : 'calc(100vh - 320px)';
 
   return (
-    <div className="cr-card flex flex-col" style={{ maxHeight }}>
+    <div
+      className={'cr-card flex flex-col' + (fill ? ' h-full' : '')}
+      style={fill ? undefined : { maxHeight }}
+    >
       <div className="cr-card-hd">
         <div className="cr-card-title">{t('review.moves.title')}</div>
         {totalPlies > 0 && (

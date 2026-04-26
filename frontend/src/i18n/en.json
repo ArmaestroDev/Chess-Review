@@ -110,6 +110,27 @@
       "empty": "Moves appear here once analysis starts.",
       "analyzingTooltip": "Analyzing…"
     },
+    "chessComStats": {
+      "title": "Chess.com profile",
+      "empty": "Enter a chess.com username on the right (or set a default in Settings) to see profile stats here.",
+      "notFound": "User \"{{username}}\" not found on chess.com.",
+      "error": "Couldn't load chess.com profile.",
+      "unrated": "Unrated",
+      "peak": "Peak",
+      "timeClass": {
+        "bullet": "Bullet",
+        "blitz": "Blitz",
+        "rapid": "Rapid"
+      },
+      "activity": {
+        "title": "Last {{count}} games",
+        "winRate": "{{rate}}% win",
+        "winRateLabel": "win",
+        "avgOpp": "Avg opponent",
+        "avgAcc": "Avg accuracy",
+        "topOpening": "Top opening"
+      }
+    },
     "controls": {
       "start": "Start",
       "previous": "Previous",
@@ -156,7 +177,8 @@
       "title": "Analysis failed"
     },
     "actions": {
-      "clear": "Clear"
+      "clear": "Clear",
+      "backToStart": "Back to start"
     },
     "mobile": {
       "tabs": {

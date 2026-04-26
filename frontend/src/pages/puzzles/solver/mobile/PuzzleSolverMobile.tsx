@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Eye, Lightbulb, Loader2 } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
-import { pickFromCatalog } from '../../../../features/puzzles/api/catalog';
+import { pickRespectingFilters } from '../../../../features/puzzles/utils/filters';
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import { useElo } from '../../../../features/puzzles/hooks/useElo';
 import { isDailyPuzzleId } from '../../../../features/puzzles/hooks/useDailyPuzzle';
@@ -61,22 +61,12 @@ export function PuzzleSolverMobile({ orientation, setOrientation }: Props) {
       navigate('/puzzles', { state: { openCalendar: true } });
       return;
     }
-    const tier = classifyTier(puzzle.rating);
-    const next = await pickFromCatalog(tier, {
+    const pick = await pickRespectingFilters({
+      fallbackTier: classifyTier(puzzle.rating),
       excludeIds: progress.lastSeenPuzzleIds,
     });
-    if (!next) {
-      const fallback = await pickFromCatalog('medium', {
-        excludeIds: progress.lastSeenPuzzleIds,
-      });
-      if (fallback) {
-        navigate(`/puzzles/${fallback.id}`);
-      } else {
-        navigate('/puzzles');
-      }
-      return;
-    }
-    navigate(`/puzzles/${next.id}`);
+    if (pick) navigate(`/puzzles/${pick.id}`);
+    else navigate('/puzzles');
   }, [puzzle, progress.lastSeenPuzzleIds, navigate]);
 
   if (error) {

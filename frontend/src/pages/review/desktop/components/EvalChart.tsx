@@ -37,14 +37,22 @@ export function EvalChart({
     });
   }, [moves, denom, innerW, innerH]);
 
-  // Build white-fill polygon (under the line, down to the bottom)
+  // Build white-fill polygon — extends to the chart's left/right edges so
+  // there are no dark slivers under the first/last point.
   const path = useMemo(() => {
     if (points.length === 0) return '';
-    const top = `M ${PADDING_X} ${PADDING_Y + innerH} ` +
+    const firstY = points[0].y;
+    const lastY = points[points.length - 1].y;
+    return (
+      `M 0 ${height}` +
+      ` L 0 ${firstY}` +
+      ' ' +
       points.map((p) => `L ${p.x} ${p.y}`).join(' ') +
-      ` L ${points[points.length - 1].x} ${PADDING_Y + innerH} Z`;
-    return top;
-  }, [points, innerH]);
+      ` L ${width} ${lastY}` +
+      ` L ${width} ${height}` +
+      ' Z'
+    );
+  }, [points, width, height]);
 
   const linePath = useMemo(() => {
     if (points.length === 0) return '';
@@ -57,7 +65,10 @@ export function EvalChart({
       : PADDING_X;
 
   return (
-    <div className="relative bg-wood-dark/60 rounded-[7px] border border-line overflow-hidden">
+    <div
+      className="relative rounded-[7px] border border-line overflow-hidden"
+      style={{ background: 'var(--board-dark)' }}
+    >
       <svg
         width={width}
         height={height}
@@ -75,11 +86,11 @@ export function EvalChart({
           x2={PADDING_X + innerW}
           y1={PADDING_Y + innerH / 2}
           y2={PADDING_Y + innerH / 2}
-          stroke="rgb(var(--accent-default) / 0.3)"
+          stroke="rgba(255,255,255,0.25)"
           strokeWidth={1}
         />
-        {/* fill (white wins area) */}
-        <path d={path} fill="rgba(245,232,200,0.85)" />
+        {/* fill (white wins area) — matches the board's light squares */}
+        <path d={path} fill="var(--board-light)" />
         <path d={linePath} stroke="rgba(0,0,0,0.4)" strokeWidth={1} fill="none" />
         {/* points */}
         {points.map((p, i) => (

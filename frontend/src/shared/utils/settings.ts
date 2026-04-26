@@ -66,47 +66,49 @@ export function saveSettings(s: Settings): void {
   }
 }
 
-export interface ThemePreview {
-  id: ThemeId;
-  label: string;
-  description: string;
+export interface ThemePalette {
   bg: string;
   card: string;
   accent: string;
 }
 
+export interface ThemePreview {
+  id: ThemeId;
+  label: string;
+  description: string;
+  dark: ThemePalette;
+  light: ThemePalette;
+}
+
+// Hex values mirror the per-theme CSS vars in index.css. Keep them in sync.
 export const THEMES: ThemePreview[] = [
   {
     id: 'wood',
     label: 'Wood',
     description: 'Warm brown with amber accents',
-    bg: '#3b2317',
-    card: '#33201a',
-    accent: '#d8b56a',
+    dark: { bg: '#3b2317', card: '#33201a', accent: '#d8b56a' },
+    light: { bg: '#f5f1e8', card: '#fdfbf5', accent: '#b8862b' },
   },
   {
     id: 'purple',
     label: 'Midnight',
     description: 'Deep violet with lavender accents',
-    bg: '#2d1f4a',
-    card: '#2a1d44',
-    accent: '#b594f5',
+    dark: { bg: '#2d1f4a', card: '#2a1d44', accent: '#b594f5' },
+    light: { bg: '#f7f3fb', card: '#fcfaff', accent: '#7c5cd1' },
   },
   {
     id: 'ocean',
     label: 'Glass',
     description: 'Cool slate-blue with cyan accents',
-    bg: '#1e2a3a',
-    card: '#1d2a3e',
-    accent: '#7ec3e0',
+    dark: { bg: '#1e2a3a', card: '#1d2a3e', accent: '#7ec3e0' },
+    light: { bg: '#eef3f8', card: '#f8fafc', accent: '#3a7ab2' },
   },
   {
     id: 'lagoon',
     label: 'Lagoon',
     description: 'Deep teal with mint accents',
-    bg: '#0f4a4a',
-    card: '#0e4040',
-    accent: '#5eebca',
+    dark: { bg: '#0f4a4a', card: '#0e4040', accent: '#5eebca' },
+    light: { bg: '#eff7f4', card: '#f8fcfa', accent: '#2d8068' },
   },
 ];
 

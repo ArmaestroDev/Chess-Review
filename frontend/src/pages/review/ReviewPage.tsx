@@ -5,6 +5,7 @@ import type { Settings as AppSettings } from '../../shared/utils/settings';
 import { useIsMobileContext } from '../../hooks/useIsMobile';
 import { ReviewDesktop } from './desktop/ReviewDesktop';
 import { useReviewState } from './useReviewState';
+import { useChessComProfile } from './useChessComProfile';
 
 // Lazy-load the mobile variant so desktop users never download the
 // mobile-only chunk. Mobile and desktop never both mount at once
@@ -30,7 +31,12 @@ export function ReviewPage(props: Props) {
     orientation: props.orientation,
     setOrientation: props.setOrientation,
   });
-  if (!isMobile) return <ReviewDesktop {...props} review={review} />;
+  // chess.com profile/stats/games — also lifted above the variant split so
+  // PgnLoader and the start-page stats card share the same source of truth.
+  const chessCom = useChessComProfile({
+    defaultUsername: props.settings.chessComUsername,
+  });
+  if (!isMobile) return <ReviewDesktop {...props} review={review} chessCom={chessCom} />;
   return (
     <Suspense
       fallback={
@@ -42,7 +48,12 @@ export function ReviewPage(props: Props) {
         </main>
       }
     >
-      <ReviewMobile {...props} review={review} />
+      <ReviewMobile
+        orientation={props.orientation}
+        setOrientation={props.setOrientation}
+        review={review}
+        chessCom={chessCom}
+      />
     </Suspense>
   );
 }

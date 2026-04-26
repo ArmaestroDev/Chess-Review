@@ -7,16 +7,83 @@ export interface ChessComPlayerSide {
   result: string; // win | checkmated | timeout | resigned | stalemate | repetition | ...
 }
 
+export type ChessComTimeClass = 'bullet' | 'blitz' | 'rapid' | 'daily';
+
 export interface ChessComGame {
   url: string;
   pgn: string;
   time_control: string;
-  time_class: 'bullet' | 'blitz' | 'rapid' | 'daily';
+  time_class: ChessComTimeClass;
   end_time: number;
   rated: boolean;
   rules: string;
   white: ChessComPlayerSide;
   black: ChessComPlayerSide;
+  /** chess.com-computed accuracies; only present on some games. 0–100. */
+  accuracies?: { white?: number; black?: number };
+  /** ECO opening URL like https://www.chess.com/openings/Italian-Game */
+  eco?: string;
+}
+
+export interface ChessComProfile {
+  '@id': string;
+  url: string;
+  username: string;
+  player_id: number;
+  name?: string;
+  title?: string;
+  avatar?: string;
+  followers?: number;
+  /** URL like /pub/country/US — fetch separately to resolve to a country name. */
+  country?: string;
+  location?: string;
+  /** Unix timestamp (seconds) — member-since. */
+  joined?: number;
+  last_online?: number;
+  status?: string;
+  is_streamer?: boolean;
+  twitch_url?: string;
+  verified?: boolean;
+  league?: string;
+}
+
+export interface ChessComRatingSnapshot {
+  rating: number;
+  date: number;
+  /** Glicko rating deviation. */
+  rd?: number;
+}
+
+export interface ChessComRatingPeak {
+  rating: number;
+  date: number;
+  /** URL to the game where the peak was set. */
+  game?: string;
+}
+
+export interface ChessComRatingRecord {
+  win: number;
+  loss: number;
+  draw: number;
+  time_per_move?: number;
+  timeout_percent?: number;
+}
+
+export interface ChessComBucketStats {
+  last?: ChessComRatingSnapshot;
+  best?: ChessComRatingPeak;
+  record?: ChessComRatingRecord;
+}
+
+export interface ChessComStats {
+  chess_bullet?: ChessComBucketStats;
+  chess_blitz?: ChessComBucketStats;
+  chess_rapid?: ChessComBucketStats;
+  chess_daily?: ChessComBucketStats;
+  chess960_daily?: ChessComBucketStats;
+  fide?: number;
+  tactics?: { highest?: { rating: number; date: number }; lowest?: { rating: number; date: number } };
+  puzzle_rush?: { best?: { total_attempts: number; score: number } };
 }
 
 const BASE = 'https://api.chess.com/pub';
@@ -30,6 +97,18 @@ async function getJson<T>(url: string): Promise<T> {
   }
   if (!res.ok) throw new Error(`chess.com request failed: ${res.status}`);
   return (await res.json()) as T;
+}
+
+export async function fetchProfile(username: string): Promise<ChessComProfile> {
+  return getJson<ChessComProfile>(
+    `${BASE}/player/${encodeURIComponent(username.trim().toLowerCase())}`,
+  );
+}
+
+export async function fetchStats(username: string): Promise<ChessComStats> {
+  return getJson<ChessComStats>(
+    `${BASE}/player/${encodeURIComponent(username.trim().toLowerCase())}/stats`,
+  );
 }
 
 /** Returns archive URLs (one per month the player has played), oldest → newest. */

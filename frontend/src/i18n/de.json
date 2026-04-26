@@ -110,6 +110,27 @@
       "empty": "Züge erscheinen hier, sobald die Analyse beginnt.",
       "analyzingTooltip": "Analysiere…"
     },
+    "chessComStats": {
+      "title": "Chess.com-Profil",
+      "empty": "Gib rechts einen chess.com-Benutzernamen ein (oder setze einen Standard in den Einstellungen), um hier Profilstatistiken zu sehen.",
+      "notFound": "Benutzer \"{{username}}\" nicht auf chess.com gefunden.",
+      "error": "Chess.com-Profil konnte nicht geladen werden.",
+      "unrated": "Ohne Wertung",
+      "peak": "Bestwert",
+      "timeClass": {
+        "bullet": "Bullet",
+        "blitz": "Blitz",
+        "rapid": "Rapid"
+      },
+      "activity": {
+        "title": "Letzte {{count}} Partien",
+        "winRate": "{{rate}}% Siege",
+        "winRateLabel": "Siege",
+        "avgOpp": "Ø Gegner",
+        "avgAcc": "Ø Genauigkeit",
+        "topOpening": "Häufigste Eröffnung"
+      }
+    },
     "controls": {
       "start": "Anfang",
       "previous": "Zurück",
@@ -156,7 +177,8 @@
       "title": "Analyse fehlgeschlagen"
     },
     "actions": {
-      "clear": "Zurücksetzen"
+      "clear": "Zurücksetzen",
+      "backToStart": "Zur Startseite"
     },
     "mobile": {
       "tabs": {

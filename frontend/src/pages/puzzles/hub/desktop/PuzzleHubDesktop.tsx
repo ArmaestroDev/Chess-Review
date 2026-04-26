@@ -29,7 +29,7 @@ import {
 import { useElo } from '../../../../features/puzzles/hooks/useElo';
 import { usePuzzleSession } from '../../../../features/puzzles/hooks/usePuzzleSession';
 import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
-import { pickFromCatalog } from '../../../../features/puzzles/api/catalog';
+import { pickRespectingFilters } from '../../../../features/puzzles/utils/filters';
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import type { Puzzle } from '../../../../features/puzzles/types';
 import type { Settings } from '../../../../shared/utils/settings';
@@ -168,10 +168,10 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
 
   const handleQuickStart = useCallback(async () => {
     try {
-      const tier = classifyTier(progress.elo);
-      const opts = { excludeIds: progress.lastSeenPuzzleIds };
-      const primary = await pickFromCatalog(tier, opts);
-      const pick = primary ?? (await pickFromCatalog('medium', opts));
+      const pick = await pickRespectingFilters({
+        fallbackTier: classifyTier(progress.elo),
+        excludeIds: progress.lastSeenPuzzleIds,
+      });
       if (pick) navigate(`/puzzles/${pick.id}`);
     } catch (err) {
       console.warn('quickstart pick failed', err);
@@ -191,10 +191,10 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
       navigate('/puzzles', { state: { openCalendar: true } });
       return;
     }
-    const tier = classifyTier(puzzle.rating);
-    const opts = { excludeIds: progress.lastSeenPuzzleIds };
-    const next = await pickFromCatalog(tier, opts);
-    const pick = next ?? (await pickFromCatalog('medium', opts));
+    const pick = await pickRespectingFilters({
+      fallbackTier: classifyTier(puzzle.rating),
+      excludeIds: progress.lastSeenPuzzleIds,
+    });
     if (pick) navigate(`/puzzles/${pick.id}`);
     else navigate('/puzzles');
   }, [puzzle, progress.lastSeenPuzzleIds, navigate]);

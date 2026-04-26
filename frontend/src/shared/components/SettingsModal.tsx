@@ -132,6 +132,7 @@ export function SettingsModal({
                 <ThemeOption
                   key={th.id}
                   theme={th}
+                  mode={initial.mode}
                   label={t(`settings.theme.${th.id}.label`)}
                   description={t(`settings.theme.${th.id}.description`)}
                   selected={th.id === theme}
@@ -171,8 +172,9 @@ export function SettingsModal({
           <button
             type="button"
             onClick={handleSave}
-            className="h-8 px-4 rounded-[7px] text-[12px] font-semibold accent-grad text-[#1d1a14]"
+            className="h-8 px-4 rounded-[7px] text-[12px] font-semibold accent-grad"
             style={{
+              color: initial.mode === 'light' ? '#fff' : '#1d1a14',
               boxShadow:
                 'inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3)',
             }}
@@ -215,17 +217,25 @@ function ToggleOption({
 
 function ThemeOption({
   theme,
+  mode,
   label,
   description,
   selected,
   onClick,
 }: {
   theme: (typeof THEMES)[number];
+  mode: ThemeMode;
   label: string;
   description: string;
   selected: boolean;
   onClick: () => void;
 }) {
+  const palette = mode === 'light' ? theme.light : theme.dark;
+  const isLight = mode === 'light';
+  const titleColor = isLight ? '#1d1a14' : '#f4ecd8';
+  const descColor = isLight ? 'rgba(29, 26, 20, 0.65)' : 'rgba(244, 236, 216, 0.6)';
+  const swatchBorder = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(245, 232, 200, 0.18)';
+  const checkColor = isLight ? '#fff' : '#1d1a14';
   return (
     <button
       type="button"
@@ -237,29 +247,23 @@ function ThemeOption({
           : 'border-line hover:border-line-2')
       }
       style={{
-        background: theme.card,
+        background: palette.card,
       }}
     >
       <div className="flex items-center gap-2.5">
         <div
           className="w-9 h-9 rounded-md border flex-shrink-0"
-          style={{
-            background: theme.bg,
-            borderColor: 'rgba(245, 232, 200, 0.18)',
-          }}
+          style={{ background: palette.bg, borderColor: swatchBorder }}
         />
         <div
           className="w-9 h-9 rounded-md border flex-shrink-0"
-          style={{
-            background: theme.accent,
-            borderColor: 'rgba(0, 0, 0, 0.2)',
-          }}
+          style={{ background: palette.accent, borderColor: 'rgba(0, 0, 0, 0.2)' }}
         />
         <div className="flex-1 min-w-0">
-          <div className="text-[12.5px] font-semibold" style={{ color: '#f4ecd8' }}>
+          <div className="text-[12.5px] font-semibold" style={{ color: titleColor }}>
             {label}
           </div>
-          <div className="text-[10.5px] mt-0.5 leading-snug" style={{ color: 'rgba(244, 236, 216, 0.6)' }}>
+          <div className="text-[10.5px] mt-0.5 leading-snug" style={{ color: descColor }}>
             {description}
           </div>
         </div>
@@ -267,7 +271,7 @@ function ThemeOption({
       {selected && (
         <div
           className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: theme.accent, color: '#1d1a14' }}
+          style={{ background: palette.accent, color: checkColor }}
         >
           <Check size={12} strokeWidth={3} />
         </div>
