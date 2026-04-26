@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { GameMeta as GameMetaT } from '../types';
+import type { GameMeta as GameMetaT } from '../../../shared/types';
 
 interface Props {
   meta: GameMetaT;

@@ -15,6 +15,12 @@
       "mute": "Mute",
       "unmute": "Unmute",
       "settings": "Settings"
+    },
+    "mobileNav": {
+      "label": "Main navigation",
+      "review": "Review",
+      "puzzles": "Puzzles",
+      "settings": "Settings"
     }
   },
   "settings": {
@@ -60,7 +66,8 @@
   },
   "loading": {
     "puzzles": "Loading puzzles…",
-    "puzzle": "Loading puzzle…"
+    "puzzle": "Loading puzzle…",
+    "review": "Loading review..."
   },
   "review": {
     "source": {
@@ -150,6 +157,15 @@
     },
     "actions": {
       "clear": "Clear"
+    },
+    "mobile": {
+      "tabs": {
+        "moves": "Moves",
+        "stats": "Stats",
+        "comment": "Comment"
+      },
+      "noMoves": "Load a PGN to see moves here, or drag a piece to start a free-play game.",
+      "noStats": "Stats appear after analysis completes."
     }
   },
   "classification": {
@@ -185,6 +201,11 @@
           "default": "A quiet position with a hidden blow."
         }
       },
+      "actions": {
+        "backToHub": "Back to puzzle hub"
+      },
+      "greeting": "Hello, {{name}}!",
+      "unknownUser": "Unknown User",
       "filters": {
         "title": "Find a puzzle",
         "difficulties": "Difficulties",
@@ -192,8 +213,10 @@
         "selectAll": "Select all",
         "deselectAll": "Deselect all",
         "start": "Start puzzles",
-        "empty": "No puzzles match this combination."
+        "empty": "No puzzles match this combination.",
+        "adjustHeader": "Adjust difficulty & themes"
       },
+      "quickStart": "Start puzzles",
       "themes": {
         "title": "Themes",
         "empty": "No skill themes at this difficulty.",
@@ -223,6 +246,10 @@
         "title": "Train these",
         "empty": "Solve a few puzzles to see which themes need the most work.",
         "tooltip": "{{fails}} failed of {{attempts}}"
+      },
+      "recent": {
+        "title": "Recent attempts",
+        "empty": "No attempts yet — solve your first puzzle to see it here."
       },
       "days": {
         "mon": "M",

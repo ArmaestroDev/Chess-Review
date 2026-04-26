@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import type { MoveClassification } from '../types';
@@ -48,6 +48,35 @@ export function Board({
   playableColor,
   onMove,
 }: Props) {
+  // FEN's second whitespace-separated field is the side to move.
+  const sideToMove = (fen.split(' ')[1] ?? 'w') as 'w' | 'b';
+  // When playableColor is set, gate by it instead of side-to-move so the
+  // locked side never moves (e.g. during an animating opponent reply).
+  const draggableColor = playableColor ?? sideToMove;
+  const draggable = !!onMove;
+
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+
+  // Drop the selection whenever the position changes (move committed,
+  // navigated to a different ply, or the locked side flipped during an
+  // animating reply).
+  useEffect(() => {
+    setSelectedSquare(null);
+  }, [fen, playableColor]);
+
+  const legalDestinations = useMemo<Set<string>>(() => {
+    if (!selectedSquare || !draggable) return new Set();
+    try {
+      const chess = new Chess(fen);
+      const moves = chess.moves({ square: selectedSquare as never, verbose: true }) as Array<{
+        to: string;
+      }>;
+      return new Set(moves.map((m) => m.to));
+    } catch {
+      return new Set();
+    }
+  }, [selectedSquare, fen, draggable]);
+
   const customSquareStyles = useMemo<Record<string, CSSProperties>>(() => {
     const styles: Record<string, CSSProperties> = {};
     for (const h of highlightedSquares ?? []) {
@@ -55,8 +84,21 @@ export function Board({
         backgroundColor: h.color ?? 'rgba(246, 224, 122, 0.55)',
       };
     }
+    if (selectedSquare) {
+      styles[selectedSquare] = {
+        ...styles[selectedSquare],
+        backgroundColor: 'rgba(120, 200, 120, 0.55)',
+      };
+    }
+    for (const dest of legalDestinations) {
+      styles[dest] = {
+        ...styles[dest],
+        backgroundImage:
+          'radial-gradient(circle, rgba(0,0,0,0.22) 18%, transparent 22%)',
+      };
+    }
     return styles;
-  }, [highlightedSquares]);
+  }, [highlightedSquares, selectedSquare, legalDestinations]);
 
   const customArrows = useMemo<[string, string, string?][]>(() => {
     return (arrows ?? []).map((a) => [a.from, a.to, a.color]);
@@ -67,22 +109,48 @@ export function Board({
     return squareToPixel(badge.square, size, orientation);
   }, [badge, size, orientation]);
 
-  // FEN's second whitespace-separated field is the side to move.
-  const sideToMove = (fen.split(' ')[1] ?? 'w') as 'w' | 'b';
-  // When playableColor is set, gate by it instead of side-to-move so the
-  // locked side never moves (e.g. during an animating opponent reply).
-  const draggableColor = playableColor ?? sideToMove;
-  const draggable = !!onMove;
+  function handleSquareClick(square: string, piece: string | undefined) {
+    if (!onMove) return;
+
+    if (selectedSquare === null) {
+      if (!piece || piece[0] !== draggableColor) return;
+      setSelectedSquare(square);
+      return;
+    }
+
+    if (selectedSquare === square) {
+      setSelectedSquare(null);
+      return;
+    }
+
+    const chess = new Chess(fen);
+    let applied: ReturnType<typeof chess.move> | null = null;
+    try {
+      applied = chess.move({ from: selectedSquare, to: square, promotion: 'q' });
+    } catch {
+      applied = null;
+    }
+
+    if (!applied) {
+      // Illegal move: switch selection to the clicked piece if it's our own,
+      // otherwise drop the selection entirely.
+      if (piece && piece[0] === draggableColor) {
+        setSelectedSquare(square);
+      } else {
+        setSelectedSquare(null);
+      }
+      return;
+    }
+
+    const uci = selectedSquare + square + (applied.promotion ?? '');
+    setSelectedSquare(null);
+    onMove(uci);
+  }
 
   return (
     <div
       className="relative board-wrap rounded-[10px] overflow-hidden"
-      style={{
-        width: size,
-        height: size,
-        boxShadow:
-          'inset 0 1px 0 rgba(255,220,150,0.06), 0 8px 30px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(245,232,200,0.10)',
-      }}
+      style={{ width: size, height: size }}
     >
       <Chessboard
         id="review-board"
@@ -102,6 +170,12 @@ export function Board({
         isDraggablePiece={
           draggable
             ? ({ piece }: { piece: string }) => piece?.[0] === draggableColor
+            : undefined
+        }
+        onSquareClick={
+          draggable
+            ? ((square: string, piece: string | undefined) =>
+                handleSquareClick(square, piece)) as never
             : undefined
         }
         onPieceDrop={

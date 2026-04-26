@@ -67,31 +67,32 @@
   grid-template-columns: 56px minmax(0, 1fr) 360px;
 }
 
-/* ─── Left rail ────────────────────────────────────────────── */
+/* ─── Solver action bar (horizontal row of Hint / Reveal / Next) ──── */
 
-.pz-rail-l {
-  @apply flex flex-col gap-1 p-1.5 rounded-card border sticky top-20;
+.pz-actions-bar {
+  @apply grid gap-1.5 p-1.5 rounded-card border;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   background: rgb(var(--wood-card));
   border-color: var(--line);
   box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
 }
-.pz-rail-btn {
-  @apply flex flex-col items-center gap-1 px-1 py-2.5 border-0 rounded-lg transition-colors;
+.pz-action-btn {
+  @apply flex items-center justify-center gap-1.5 h-10 px-2 border-0 rounded-lg transition-colors;
   background: transparent;
   color: rgb(var(--ink-2));
 }
-.pz-rail-btn:hover:not(:disabled) {
+.pz-action-btn:hover:not(:disabled) {
   background: rgb(var(--wood-hover));
   color: rgb(var(--ink-default));
 }
-.pz-rail-btn:disabled {
+.pz-action-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
-.pz-rail-btn span {
-  @apply text-[10px] font-medium tracking-[0.02em];
+.pz-action-btn span {
+  @apply text-[12px] font-medium;
 }
-.pz-rail-btn.active {
+.pz-action-btn.active {
   background: var(--accent-soft);
   color: rgb(var(--accent-ink));
 }
@@ -288,6 +289,44 @@
 
 /* ─── Hub layout ───────────────────────────────────────────── */
 
+/* Three-column layout, mirroring ReviewDesktop: left + center board + right.
+   The fixed track widths must stay in sync with PuzzleHubDesktop's board
+   sizing formula (leftCol=320, rightCol=360). */
+.pz-hub-grid {
+  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start;
+  grid-template-columns: 320px minmax(0, 1fr) 360px;
+}
+.pz-hub-col {
+  @apply flex flex-col gap-4 min-w-0;
+}
+.pz-hub-center {
+  @apply flex justify-center min-w-0;
+}
+
+/* Thin row sitting above the left-column panels. Same height in both states
+   so entering/leaving the solver doesn't shift the panels below. */
+.pz-hub-slot {
+  @apply inline-flex items-center gap-2 w-full h-9 px-3.5 rounded-[10px] border text-[12.5px] transition-colors;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  color: rgb(var(--ink-2));
+}
+/* Back-to-hub variant — same shape as the greeting, but interactive. */
+.pz-hub-slot--back {
+  @apply font-medium cursor-pointer border-0;
+}
+.pz-hub-slot--back:hover {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+.pz-hub-slot--back svg {
+  color: rgb(var(--ink-3));
+}
+.pz-hub-slot--back:hover svg {
+  color: rgb(var(--ink-default));
+}
+
+/* Legacy two-column layout, retained for compatibility. */
 .pz-hub {
   @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -334,20 +373,6 @@
   @apply text-[11px];
   color: rgb(var(--ink-3));
 }
-.pz-daily-cta {
-  @apply inline-flex items-center gap-2 px-4 h-9 rounded-[9px] self-start mt-2 border-0 text-[13px] font-semibold transition-colors;
-  background: linear-gradient(180deg, rgb(var(--wood-light)), rgb(var(--wood-dark)));
-  color: rgb(var(--ink-default));
-  box-shadow:
-    inset 0 1px 0 var(--accent-soft),
-    0 1px 2px rgba(0, 0, 0, 0.16);
-}
-.pz-daily-cta:hover {
-  background: linear-gradient(180deg, rgb(var(--wood-hover)), rgb(var(--wood-card)));
-}
-.pz-daily-cta svg {
-  color: rgb(var(--accent-default));
-}
 .pz-daily-board {
   @apply flex items-center p-3.5;
 }
@@ -356,6 +381,82 @@
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.18),
     0 0 0 0.5px var(--line-2);
+}
+
+/* When the daily card sits beside a centerpiece board, drop the inline board
+   column so the card collapses to a text-only layout. */
+.pz-daily.pz-daily--noboard {
+  grid-template-columns: 1fr;
+}
+
+/* ─── Recent attempts card ────────────────────────────────── */
+
+.pz-recent {
+  @apply pb-3.5;
+}
+.pz-recent-list {
+  @apply flex flex-col px-4 pt-1;
+}
+/* Compact 3-column row: badge | theme (flex) | meta (delta + when stacked).
+   Theme gets ~150px in a 320px sidebar — wide enough for "Discovered attack". */
+.pz-recent-row {
+  @apply grid gap-2 items-center py-2 text-left transition-colors;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  background: transparent;
+  border: 0;
+  border-bottom: 0.5px solid var(--line);
+  cursor: pointer;
+}
+.pz-recent-row:last-child {
+  border-bottom: 0;
+}
+.pz-recent-row:hover {
+  background: rgb(var(--wood-hover) / 0.4);
+}
+.pz-recent-badge {
+  @apply inline-flex items-center justify-center w-6 h-6 rounded-md;
+}
+.pz-recent-badge--solved {
+  background: rgba(134, 191, 44, 0.16);
+  color: rgb(134, 191, 44);
+}
+.pz-recent-badge--failed {
+  background: rgba(214, 68, 58, 0.18);
+  color: rgb(214, 68, 58);
+}
+.mode-light .pz-recent-badge--solved {
+  background: rgba(80, 130, 30, 0.14);
+  color: rgb(70, 110, 25);
+}
+.mode-light .pz-recent-badge--failed {
+  background: rgba(180, 50, 40, 0.12);
+  color: rgb(160, 40, 30);
+}
+.pz-recent-theme {
+  @apply text-[12.5px] font-medium truncate min-w-0;
+  color: rgb(var(--ink-default));
+}
+.pz-recent-meta {
+  @apply flex flex-col items-end leading-tight;
+}
+.pz-recent-delta {
+  @apply text-[11.5px] font-mono font-semibold;
+}
+.pz-recent-delta--pos {
+  color: rgb(134, 191, 44);
+}
+.pz-recent-delta--neg {
+  color: rgb(214, 68, 58);
+}
+.mode-light .pz-recent-delta--pos {
+  color: rgb(70, 110, 25);
+}
+.mode-light .pz-recent-delta--neg {
+  color: rgb(160, 40, 30);
+}
+.pz-recent-when {
+  @apply text-[10.5px] mt-0.5;
+  color: rgb(var(--ink-3));
 }
 
 /* ─── Themes card ─────────────────────────────────────────── */
@@ -518,22 +619,32 @@
   color: rgb(var(--ink-4));
 }
 
-/* ─── Filters card ────────────────────────────────────────── */
+/* ─── Hero CTA ────────────────────────────────────────────── */
 
-.pz-filter-cta {
-  @apply inline-flex items-center gap-1.5 px-3 h-8 rounded-[8px] border-0 text-[12px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
-  background: linear-gradient(180deg, rgb(var(--wood-light)), rgb(var(--wood-dark)));
-  color: rgb(var(--ink-default));
+/* Shared accent-gradient primary button used for the page's most important
+   actions (Start daily, Start puzzles). Visually distinct from the secondary
+   wood-toned buttons (Daily calendar, Adjust filters) so the user's eye lands
+   on the start actions first. */
+.pz-hero-cta {
+  @apply inline-flex items-center justify-center gap-2 h-12 px-5 rounded-[11px] border-0 text-[14px] font-semibold transition-[filter,box-shadow,background] disabled:opacity-40 disabled:cursor-not-allowed;
+  background-image: linear-gradient(90deg, rgb(var(--accent-default)), rgb(var(--accent-ink)));
+  color: #1d1a14;
   box-shadow:
-    inset 0 1px 0 var(--accent-soft),
-    0 1px 2px rgba(0, 0, 0, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 4px 14px rgba(0, 0, 0, 0.22);
 }
-.pz-filter-cta:hover:not(:disabled) {
-  background: linear-gradient(180deg, rgb(var(--wood-hover)), rgb(var(--wood-card)));
+.pz-hero-cta:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 6px 18px rgba(0, 0, 0, 0.28);
 }
-.pz-filter-cta svg {
-  color: rgb(var(--accent-default));
+/* In light mode the accent gradient is dark, so dark text is unreadable. */
+.mode-light .pz-hero-cta {
+  color: #fdfbf5;
 }
+
+/* ─── Filters card ────────────────────────────────────────── */
 
 .pz-filter-section-hd {
   @apply flex items-center justify-between mb-2;
@@ -645,4 +756,55 @@
 .pz-weak-pct {
   @apply text-[11px] font-medium text-right;
   color: rgb(var(--ink-3));
+}
+
+/* ─── Mobile-only: collapsible filter trigger ─────────────────────────── */
+
+/* Quick-start panel — wraps the primary CTA + the collapsible filter trigger
+   in one card so it visually pairs with the daily puzzle card above. Same
+   gradient + border + shadow as `.pz-daily`. */
+.pz-quick-card {
+  @apply rounded-card border overflow-hidden;
+  border-color: var(--line);
+  background-image:
+    linear-gradient(180deg, var(--accent-softer), transparent 50%),
+    linear-gradient(135deg, rgb(var(--wood-card)), rgb(var(--wood-panel)));
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
+}
+.pz-quick-card-body {
+  @apply p-3.5;
+}
+.pz-quick-card-trigger {
+  @apply inline-flex items-center justify-between w-full h-11 px-4 text-[13px] font-semibold transition-colors;
+  background: transparent;
+  border: 0;
+  border-top: 0.5px solid var(--line);
+  color: rgb(var(--ink-default));
+  cursor: pointer;
+}
+.pz-quick-card-trigger:hover {
+  background: rgb(var(--wood-hover) / 0.4);
+}
+.pz-quick-card-trigger svg {
+  color: rgb(var(--ink-3));
+}
+
+/* ─── Mobile overrides ─────────────────────────────────────── */
+
+/* On narrow viewports the daily card's fixed 220px right column squeezes
+   the title; collapse to a single column so the board stacks below. */
+@media (max-width: 768px) {
+  .pz-daily {
+    grid-template-columns: 1fr;
+  }
+  .pz-daily-board {
+    padding: 0 14px 14px;
+  }
+  .pz-daily-board > div {
+    /* The card's grid + page padding already constrain the width; remove the
+       hard 240px cap so the board scales up to a comfortable mobile preview. */
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }

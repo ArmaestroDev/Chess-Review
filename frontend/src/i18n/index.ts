@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from './en.json';
 import de from './de.json';
-import { detectBrowserLanguage, loadSettings, type Language } from '../utils/settings';
+import { detectBrowserLanguage, loadSettings, type Language } from '../shared/utils/settings';
 
 // Resolve the initial language synchronously: saved setting wins, else browser
 // detection. We use the saved-language helper directly (not Settings.language)

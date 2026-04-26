@@ -1,16 +1,15 @@
-import { ArrowUpDown, Settings as SettingsIcon, Volume2, VolumeX } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, VolumeX } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { IconBtn } from './IconBtn';
 
 interface Props {
-  onFlipBoard: () => void;
   onToggleMute: () => void;
   onOpenSettings: () => void;
   muted: boolean;
 }
 
 export function Header({
-  onFlipBoard,
   onToggleMute,
   onOpenSettings,
   muted,
@@ -19,7 +18,6 @@ export function Header({
   return (
     <header className="cr-header sticky top-0 z-10 px-7 py-3.5">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center max-w-[1600px] mx-auto w-full">
-        {/* Brand */}
         <div className="flex items-center gap-2.5">
           <div
             className="w-[34px] h-[34px] rounded-[9px]"
@@ -45,7 +43,6 @@ export function Header({
           </div>
         </div>
 
-        {/* Nav (pill) */}
         <nav className="flex gap-1 p-[3px] bg-wood-dark/70 rounded-full border border-line">
           <NavPill to="/" end>
             {t('header.nav.review')}
@@ -53,11 +50,7 @@ export function Header({
           <NavPill to="/puzzles">{t('header.nav.puzzles')}</NavPill>
         </nav>
 
-        {/* Actions */}
         <div className="flex gap-2 items-center justify-self-end">
-          <IconBtn onClick={onFlipBoard} title={t('header.actions.flipBoard')}>
-            <ArrowUpDown size={16} />
-          </IconBtn>
           <IconBtn
             onClick={onToggleMute}
             title={muted ? t('header.actions.unmute') : t('header.actions.mute')}
@@ -97,26 +90,5 @@ function NavPill({
     >
       {children}
     </NavLink>
-  );
-}
-
-function IconBtn({
-  children,
-  onClick,
-  title,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  title?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className="w-8 h-8 rounded-lg border border-line bg-wood-card text-ink-2 inline-flex items-center justify-center hover:bg-wood-hover hover:text-ink transition-colors"
-    >
-      {children}
-    </button>
   );
 }

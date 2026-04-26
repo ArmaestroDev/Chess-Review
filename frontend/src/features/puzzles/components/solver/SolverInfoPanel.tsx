@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { Puzzle, SessionState } from '../../types';
 import { classifyTier } from '../../utils/difficulty';
-import { useThemeNames, useTierLabel } from '../../utils/i18nHelpers';
+import { useTierLabel } from '../../utils/i18nHelpers';
 
 interface Props {
   state: SessionState;
@@ -12,7 +12,6 @@ interface Props {
 export function SolverInfoPanel({ state, puzzle, userColor }: Props) {
   const { t } = useTranslation();
   const tierLabel = useTierLabel();
-  const prettyTheme = useThemeNames();
   const tier = classifyTier(puzzle.rating);
   const sideToMove = userColorPrompt(state, userColor, t);
   const hintText = hintFor(state, puzzle, t);
@@ -36,16 +35,6 @@ export function SolverInfoPanel({ state, puzzle, userColor }: Props) {
           <div className="pz-hint">
             <div className="pz-hint-label">{t('puzzles.solver.hint.label')}</div>
             <div className="pz-hint-text">{hintText}</div>
-          </div>
-        )}
-
-        {puzzle.themes.length > 0 && (
-          <div className="pz-themes">
-            {puzzle.themes.slice(0, 6).map((tag) => (
-              <span key={tag} className="cr-chip">
-                {prettyTheme(tag)}
-              </span>
-            ))}
           </div>
         )}
       </div>

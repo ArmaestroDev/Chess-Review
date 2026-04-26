@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MoveNode, MoveTree, NodeId } from '../types';
-import { fullMainline } from '../utils/tree';
-import { ClassificationIcon } from './ClassificationIcon';
+import type { MoveNode, MoveTree, NodeId } from '../../../../shared/types';
+import { fullMainline } from '../../../../shared/utils/tree';
+import { ClassificationIcon } from '../../../../shared/components/ClassificationIcon';
 
 interface Props {
   tree: MoveTree;

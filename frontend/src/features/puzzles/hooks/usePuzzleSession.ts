@@ -20,8 +20,8 @@ import {
   classifySound,
   play as playSound,
   type SoundKind,
-} from '../../../utils/sounds';
-import { ensureConnected, socket } from '../../../socket';
+} from '../../../shared/utils/sounds';
+import { ensureConnected, socket } from '../../../shared/socket';
 import { useElo } from './useElo';
 import { isDailyPuzzleId, todayDateKey } from './useDailyPuzzle';
 

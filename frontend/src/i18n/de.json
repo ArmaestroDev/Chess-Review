@@ -15,6 +15,12 @@
       "mute": "Stummschalten",
       "unmute": "Ton an",
       "settings": "Einstellungen"
+    },
+    "mobileNav": {
+      "label": "Hauptnavigation",
+      "review": "Analyse",
+      "puzzles": "Aufgaben",
+      "settings": "Einstellungen"
     }
   },
   "settings": {
@@ -60,7 +66,8 @@
   },
   "loading": {
     "puzzles": "Lade Aufgaben…",
-    "puzzle": "Lade Aufgabe…"
+    "puzzle": "Lade Aufgabe…",
+    "review": "Analyse wird geladen..."
   },
   "review": {
     "source": {
@@ -150,6 +157,15 @@
     },
     "actions": {
       "clear": "Zurücksetzen"
+    },
+    "mobile": {
+      "tabs": {
+        "moves": "Züge",
+        "stats": "Statistik",
+        "comment": "Kommentar"
+      },
+      "noMoves": "Lade eine PGN, um Züge zu sehen, oder ziehe eine Figur, um eine freie Partie zu starten.",
+      "noStats": "Statistiken erscheinen nach Abschluss der Analyse."
     }
   },
   "classification": {
@@ -185,6 +201,11 @@
           "default": "Eine ruhige Stellung mit einem versteckten Schlag."
         }
       },
+      "actions": {
+        "backToHub": "Zurück zur Übersicht"
+      },
+      "greeting": "Hallo, {{name}}!",
+      "unknownUser": "Unbekannter Nutzer",
       "filters": {
         "title": "Rätsel finden",
         "difficulties": "Schwierigkeit",
@@ -192,8 +213,10 @@
         "selectAll": "Alle auswählen",
         "deselectAll": "Alle abwählen",
         "start": "Rätsel starten",
-        "empty": "Keine Aufgabe passt zu dieser Auswahl."
+        "empty": "Keine Aufgabe passt zu dieser Auswahl.",
+        "adjustHeader": "Schwierigkeit & Themen anpassen"
       },
+      "quickStart": "Rätsel starten",
       "themes": {
         "title": "Themen",
         "empty": "Keine Themen für diese Schwierigkeit.",
@@ -223,6 +246,10 @@
         "title": "Diese trainieren",
         "empty": "Löse ein paar Aufgaben, um zu sehen, welche Themen am meisten Übung brauchen.",
         "tooltip": "{{fails}} von {{attempts}} verloren"
+      },
+      "recent": {
+        "title": "Letzte Versuche",
+        "empty": "Noch keine Versuche — löse deine erste Aufgabe, um sie hier zu sehen."
       },
       "days": {
         "mon": "M",

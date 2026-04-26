@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Board } from '../../../../components/Board';
+import { Board } from '../../../../shared/components/Board';
 import type { SessionState } from '../../types';
 
 interface Props {

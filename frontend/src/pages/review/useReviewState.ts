@@ -1,25 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import { useTranslation } from 'react-i18next';
-import { Board, type BoardArrow } from '../components/Board';
-import { EvalBar } from '../components/EvalBar';
-import { GameMeta as GameMetaCard } from '../components/GameMeta';
-import { MovesCard } from '../components/MovesCard';
-import { PlayerStrip } from '../components/PlayerStrip';
-import { PgnLoader } from '../components/PgnLoader';
-import { CommentBubble } from '../components/CommentBubble';
-import { AccuracyCard } from '../components/AccuracyCard';
-import { AnalyzingCard } from '../components/AnalyzingCard';
-import { EvalChart } from '../components/EvalChart';
-import type { Settings as AppSettings } from '../utils/settings';
-import { ensureConnected, socket } from '../socket';
+import type { BoardArrow } from '../../shared/components/Board';
+import { ensureConnected, socket } from '../../shared/socket';
 import type {
   AnalysisEvent,
   GameMeta,
   MoveAnalysis,
   MoveTree,
   NodeId,
-} from '../types';
+} from '../../shared/types';
 import {
   addChild,
   createTree,
@@ -28,29 +18,32 @@ import {
   isOnMainline,
   pathTo,
   updateMove,
-} from '../utils/tree';
+} from '../../shared/utils/tree';
 import {
   classifySound,
   play as playSound,
-} from '../utils/sounds';
+} from '../../shared/utils/sounds';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const PLAYBACK_INTERVAL_MS = 900;
 
-type Status = 'idle' | 'loading' | 'analyzing' | 'ready';
+export type ReviewStatus = 'idle' | 'loading' | 'analyzing' | 'ready';
 
-interface Props {
-  settings: AppSettings;
+interface ReviewStateOptions {
   orientation: 'white' | 'black';
   setOrientation: (o: 'white' | 'black') => void;
 }
 
-export function ReviewPage({
-  settings,
-  orientation,
-  setOrientation,
-}: Props) {
+/**
+ * Owns the entire review-page runtime: socket subscription, move tree,
+ * navigation, playback, branch creation, derived board state. Both the
+ * desktop and mobile layouts call this hook so neither has to re-implement
+ * the wiring. Only one layout is mounted at a time (gated by useIsMobile),
+ * so we never race with two simultaneous socket subscriptions.
+ */
+export function useReviewState({ orientation, setOrientation }: ReviewStateOptions) {
   const { t } = useTranslation();
+
   // ---- Tree + navigation state ------------------------------------------
 
   const initialTree = useMemo(() => createTree(), []);
@@ -63,15 +56,23 @@ export function ReviewPage({
 
   // ---- Misc UI state ----------------------------------------------------
 
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<ReviewStatus>('idle');
   const [meta, setMeta] = useState<GameMeta>(emptyMeta());
   const [error, setError] = useState<string | null>(null);
   const [showingBest, setShowingBest] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [boardSize, setBoardSize] = useState(560);
 
   const playTimer = useRef<number | null>(null);
   const lastSoundedNode = useRef<NodeId | null>(null);
+
+  // Track latest status via a ref so the socket-effect cleanup (which only
+  // runs at hook unmount) can decide whether there is an in-flight backend
+  // analyze worth cancelling. Without this, an unmount mid-analysis would
+  // orphan the engine on the backend's queue.
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   // ---- Socket wiring ----------------------------------------------------
 
@@ -129,27 +130,15 @@ export function ReviewPage({
     socket.on('analysis:event', onEvent);
     return () => {
       socket.off('analysis:event', onEvent);
+      // Belt-and-suspenders: if the hook unmounts (e.g. user navigates away
+      // mid-analysis), tell the backend to stop so the engine isn't left
+      // running with no listener. Only emit when there's something to
+      // cancel — emitting cancel on idle would be a no-op but adds noise.
+      const s = statusRef.current;
+      if (s === 'loading' || s === 'analyzing') {
+        socket.emit('cancel');
+      }
     };
-  }, []);
-
-  // ---- Responsive board sizing ------------------------------------------
-
-  useEffect(() => {
-    function update() {
-      const leftCol = 320;
-      const rightCol = 360;
-      const gaps = 40;
-      const horizPad = 56;
-      const evalGap = 32;
-      const usableW = Math.min(window.innerWidth, 1600);
-      const availW = usableW - leftCol - rightCol - gaps - horizPad - evalGap;
-      const availH = window.innerHeight - 64 - 120 - 40;
-      const size = Math.max(320, Math.min(availW, availH, 720));
-      setBoardSize(Math.floor(size));
-    }
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
   }, []);
 
   // ---- Derived "current node" -------------------------------------------
@@ -488,7 +477,7 @@ export function ReviewPage({
     setIsPlaying(false);
   }, []);
 
-  // ---- Layout -----------------------------------------------------------
+  // ---- Layout helpers ---------------------------------------------------
 
   const playerLabel = useMemo(() => {
     const blackOnTop = orientation === 'white';
@@ -514,133 +503,55 @@ export function ReviewPage({
   const expectedTotal =
     meta.totalPlies > 0 ? meta.totalPlies : Math.max(mainlineCount, 1);
 
-  return (
-    <>
-      <main className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start">
-        {/* LEFT — game meta + moves */}
-        <div className="flex flex-col gap-4 min-w-0">
-          <GameMetaCard meta={meta} hasGame={hasGame} />
-          <MovesCard
-            tree={tree}
-            currentNodeId={currentNodeId}
-            isPlaying={isPlaying}
-            onSelectNode={selectNode}
-            onJumpFirst={goFirst}
-            onJumpPrev={goPrev}
-            onJumpNext={goNext}
-            onJumpLast={goLast}
-            onTogglePlay={() => setIsPlaying((p) => !p)}
-            onShowBest={() => setShowingBest((s) => !s)}
-            showingBest={showingBest}
-            canShowBest={canShowBest}
-          />
-        </div>
+  const togglePlay = useCallback(() => setIsPlaying((p) => !p), []);
+  const toggleShowBest = useCallback(() => setShowingBest((s) => !s), []);
 
-        {/* CENTER — player strips + eval + board */}
-        <div className="flex justify-center min-w-0">
-          <div
-            className="flex flex-col gap-2.5 items-stretch"
-            style={{ width: boardSize + 32 }}
-          >
-            <PlayerStrip
-              color={playerLabel.topColor}
-              name={playerLabel.top}
-              rating={playerLabel.topRating}
-              active={hasGame && playerToMove === playerLabel.topColor}
-            />
-            <div
-              className="relative grid gap-2.5 items-stretch"
-              style={{ gridTemplateColumns: '22px 1fr', height: boardSize }}
-            >
-              <EvalBar evalWhite={evalForBar} orientation={orientation} />
-              <Board
-                fen={displayedFen}
-                size={boardSize}
-                orientation={orientation}
-                highlightedSquares={highlights}
-                arrows={arrows}
-                badge={badge}
-                onMove={allowDrag ? handlePieceMove : undefined}
-              />
-              <button
-                type="button"
-                onClick={handleReset}
-                className="absolute h-7 px-2.5 rounded-[7px] border border-line bg-wood-card text-ink-3 text-[11.5px] font-medium hover:bg-wood-hover hover:text-ink transition-colors whitespace-nowrap"
-                style={{ left: 'calc(100% + 8px)', bottom: 0 }}
-              >
-                {t('review.actions.clear')}
-              </button>
-            </div>
-            <PlayerStrip
-              color={playerLabel.bottomColor}
-              name={playerLabel.bottom}
-              rating={playerLabel.bottomRating}
-              active={hasGame && playerToMove === playerLabel.bottomColor}
-            />
-          </div>
-        </div>
-
-        {/* RIGHT — source / coach / accuracy / chart */}
-        <div className="flex flex-col gap-4 min-w-0">
-          {showLoader ? (
-            <PgnLoader
-              onAnalyze={handleAnalyze}
-              busy={false}
-              defaultUsername={settings.chessComUsername}
-            />
-          ) : showAnalyzing ? (
-            <AnalyzingCard
-              done={mainlineCount}
-              total={expectedTotal}
-              onCancel={handleReset}
-            />
-          ) : (
-            <CommentBubble move={isPending ? null : currentMove} />
-          )}
-
-          <AccuracyCard
-            whiteAccuracy={meta.whiteAccuracy}
-            blackAccuracy={meta.blackAccuracy}
-          />
-
-          {mainlineMoves.length > 0 && (
-            <div className="cr-card">
-              <div className="cr-card-hd">
-                <div className="cr-card-title">{t('review.evalChart.title')}</div>
-              </div>
-              <div className="px-4 pb-4">
-                <EvalChart
-                  moves={mainlineMoves}
-                  totalPlies={expectedTotal}
-                  currentPly={chartCurrentPly}
-                  onSelect={(ply) => {
-                    const id = mainlineNodeIdForPly(tree, ply);
-                    if (id) selectNode(id);
-                  }}
-                  width={328}
-                  height={70}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {error && (
-        <div
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg shadow-card-md max-w-[80%]"
-          style={{ background: 'rgba(214, 68, 58, 0.95)', color: '#fdfbf5' }}
-          role="alert"
-        >
-          <div className="font-semibold mb-0.5">{t('review.errors.title')}</div>
-          <div className="text-sm">{error}</div>
-        </div>
-      )}
-    </>
-  );
+  return {
+    // tree / navigation
+    tree,
+    currentNodeId,
+    currentMove,
+    isPending,
+    selectNode,
+    goPrev,
+    goNext,
+    goFirst,
+    goLast,
+    // playback / show-best
+    isPlaying,
+    togglePlay,
+    showingBest,
+    toggleShowBest,
+    canShowBest,
+    // status / meta
+    status,
+    meta,
+    error,
+    mainlineCount,
+    expectedTotal,
+    mainlineMoves,
+    chartCurrentPly,
+    // board display
+    displayedFen,
+    evalForBar,
+    highlights,
+    arrows,
+    badge,
+    allowDrag,
+    handlePieceMove,
+    // layout flags
+    showLoader,
+    showAnalyzing,
+    hasGame,
+    playerLabel,
+    playerToMove,
+    // actions
+    handleAnalyze,
+    handleReset,
+  };
 }
 
-function mainlineNodeIdForPly(tree: MoveTree, ply: number): NodeId | null {
+export function mainlineNodeIdForPly(tree: MoveTree, ply: number): NodeId | null {
   let cur = tree.nodes[tree.rootId];
   while (cur) {
     if (cur.move?.ply === ply) return cur.id;
@@ -698,3 +609,9 @@ function buildPlaceholderMove(
     wpLoss: 0,
   };
 }
+
+// Public alias for the entire review-state surface. The wrapper page calls
+// useReviewState() and threads the result through to whichever variant
+// (desktop / mobile) is mounted, so the move tree, socket subscription, and
+// engine lifecycle survive a breakpoint cross.
+export type ReviewState = ReturnType<typeof useReviewState>;

@@ -1,6 +1,7 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { CalendarDays, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Board } from '../../../../components/Board';
+import { Board } from '../../../../shared/components/Board';
 import type { Puzzle } from '../../types';
 import { applyUci } from '../../utils/validateSolution';
 import { useThemeNames } from '../../utils/i18nHelpers';
@@ -10,6 +11,9 @@ interface Props {
   date: string;
   onStart: () => void;
   onViewCalendar: () => void;
+  /** When false, omit the inline board preview (used when the hub renders the
+   *  daily position centrally). */
+  showBoard?: boolean;
 }
 
 export function DailyPuzzleCard({
@@ -17,15 +21,35 @@ export function DailyPuzzleCard({
   date,
   onStart,
   onViewCalendar,
+  showBoard = true,
 }: Props) {
   const { t, i18n } = useTranslation();
   const prettyTheme = useThemeNames();
-  // Show the position the user actually solves from (after opponent's setup).
   const displayFen = applyUci(puzzle.fen, puzzle.moves[0] ?? '') ?? puzzle.fen;
   const userColor = userColorOf(puzzle);
 
+  // react-chessboard needs a numeric size, but the wrapper is CSS-sized
+  // (aspect-ratio + responsive width caps). Sync-measure before paint so the
+  // first frame renders at the correct width — ResizeObserver alone snaps
+  // visibly from the fallback to the real size on every mount.
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const [boardSize, setBoardSize] = useState(192);
+  useLayoutEffect(() => {
+    if (!showBoard) return;
+    const el = boardWrapRef.current;
+    if (!el) return;
+    const initial = Math.floor(el.getBoundingClientRect().width);
+    if (initial > 0) setBoardSize(initial);
+    const ro = new ResizeObserver((entries) => {
+      const w = Math.floor(entries[0]?.contentRect.width ?? 0);
+      if (w > 0) setBoardSize(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showBoard]);
+
   return (
-    <div className="pz-daily">
+    <div className={'pz-daily' + (showBoard ? '' : ' pz-daily--noboard')}>
       <div className="pz-daily-l">
         <div className="pz-daily-eyebrow">
           {t('puzzles.hub.daily.eyebrow', {
@@ -46,26 +70,28 @@ export function DailyPuzzleCard({
             })}
           </span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button type="button" onClick={onStart} className="pz-daily-cta">
-            <Play size={14} />
+        <div className="flex items-center gap-2 flex-wrap mt-2">
+          <button type="button" onClick={onStart} className="pz-hero-cta">
+            <Play size={16} />
             {t('puzzles.hub.daily.start')}
           </button>
           <button
             type="button"
             onClick={onViewCalendar}
-            className="inline-flex items-center gap-2 px-3 h-9 mt-2 rounded-[9px] border border-line-2 bg-wood-card text-ink-2 text-[12.5px] font-medium hover:bg-wood-hover hover:text-ink transition-colors"
+            className="inline-flex items-center gap-2 px-3 h-9 rounded-[9px] border border-line-2 bg-wood-card text-ink-2 text-[12.5px] font-medium hover:bg-wood-hover hover:text-ink transition-colors"
           >
             <CalendarDays size={14} />
             {t('puzzles.hub.daily.viewCalendar')}
           </button>
         </div>
       </div>
-      <div className="pz-daily-board">
-        <div>
-          <Board fen={displayFen} size={192} orientation={userColor} />
+      {showBoard && (
+        <div className="pz-daily-board">
+          <div ref={boardWrapRef}>
+            <Board fen={displayFen} size={boardSize} orientation={userColor} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

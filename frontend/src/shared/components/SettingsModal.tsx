@@ -16,7 +16,12 @@ interface Props {
   onSave: (next: Settings) => void;
 }
 
-export function SettingsModal({ open, initial, onClose, onSave }: Props) {
+export function SettingsModal({
+  open,
+  initial,
+  onClose,
+  onSave,
+}: Props) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<ThemeId>(initial.theme);
   const [mode, setMode] = useState<ThemeMode>(initial.mode);
@@ -52,13 +57,13 @@ export function SettingsModal({ open, initial, onClose, onSave }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 cr-backdrop flex items-center justify-center p-6"
+      className="fixed inset-0 z-50 cr-backdrop flex items-center justify-center p-6 cr-modal-mobile-fullscreen"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="cr-card w-full max-w-[520px] shadow-card-md"
+        className="cr-card w-full max-w-[520px] shadow-card-md overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

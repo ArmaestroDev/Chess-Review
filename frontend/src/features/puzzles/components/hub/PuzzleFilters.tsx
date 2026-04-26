@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Play } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { THEMES, pickFromMultiSelect } from '../../api/catalog';
 import { ALL_TIERS } from '../../utils/difficulty';
 import { useThemeNames, useTierLabel } from '../../utils/i18nHelpers';
-import type { Puzzle, Tier } from '../../types';
+import type { Tier } from '../../types';
 
 // Descriptor themes that aren't useful as filters — same set as the old
 // ThemeGrid filtered out.
@@ -30,10 +30,13 @@ interface PersistedFilters {
   themes: string[];
 }
 
-function loadFilters(validThemes: ReadonlyArray<string>): PersistedFilters {
+// Returns null when nothing has been persisted — lets the caller distinguish
+// "fresh user" (apply auto-defaults) from "user explicitly deselected
+// everything" (honor the empty selection).
+function loadFilters(validThemes: ReadonlyArray<string>): PersistedFilters | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { tiers: [], themes: [] };
+    if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PersistedFilters>;
     const tierSet = new Set(ALL_TIERS as ReadonlyArray<string>);
     const themeSet = new Set(validThemes);
@@ -50,7 +53,7 @@ function loadFilters(validThemes: ReadonlyArray<string>): PersistedFilters {
         : [],
     };
   } catch {
-    return { tiers: [], themes: [] };
+    return null;
   }
 }
 
@@ -64,10 +67,11 @@ function saveFilters(f: PersistedFilters): void {
 
 interface Props {
   excludeIds: ReadonlyArray<string>;
-  onPick: (puzzle: Puzzle) => void;
+  /** When set + no persisted state, default tier selection to [defaultTier]. */
+  defaultTier?: Tier;
 }
 
-export function PuzzleFilters({ excludeIds, onPick }: Props) {
+export function PuzzleFilters({ excludeIds, defaultTier }: Props) {
   const { t } = useTranslation();
   const tierLabel = useTierLabel();
   const themeName = useThemeNames();
@@ -85,14 +89,25 @@ export function PuzzleFilters({ excludeIds, onPick }: Props) {
   );
   const [hydrated, setHydrated] = useState(false);
 
-  // Hydrate once on mount; defer to avoid SSR pitfalls and to keep the first
-  // render cheap.
+  // Hydrate once on mount. If no localStorage entry exists, fall back to
+  // sensible defaults: the user's current tier (if provided) and every theme
+  // selected, so the page-level Start CTA works on first paint.
+  const hydratedRef = useRef(false);
   useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
     const persisted = loadFilters(skillThemes);
-    setSelectedTiers(new Set(persisted.tiers));
-    setSelectedThemes(new Set(persisted.themes));
+    if (persisted === null) {
+      setSelectedTiers(
+        defaultTier ? new Set<Tier>([defaultTier]) : new Set<Tier>(ALL_TIERS),
+      );
+      setSelectedThemes(new Set<string>(skillThemes));
+    } else {
+      setSelectedTiers(new Set(persisted.tiers));
+      setSelectedThemes(new Set(persisted.themes));
+    }
     setHydrated(true);
-  }, [skillThemes]);
+  }, [skillThemes, defaultTier]);
 
   // Persist whenever the user toggles something — but only after hydration so
   // we don't immediately overwrite saved state with the empty initial set.
@@ -139,19 +154,15 @@ export function PuzzleFilters({ excludeIds, onPick }: Props) {
     [],
   );
 
-  // Disable Start when either set is empty OR when no puzzle matches the
-  // selected combination. We probe pickFromMultiSelect (now async — tier
-  // chunks are dynamic-imported) and stash the result in state. While probing,
-  // we treat the button as "tentatively enabled" if both selections are
-  // non-empty so the UI doesn't flicker every time the user toggles a chip.
+  // Surface the "no puzzles match" hint when the user's selection probes
+  // empty. The page-level Start CTA owns the actual pick; this component only
+  // manages selection state + persistence.
   const [probeNoMatch, setProbeNoMatch] = useState(false);
   useEffect(() => {
     if (selectedTiers.size === 0 || selectedThemes.size === 0) {
       setProbeNoMatch(false);
       return;
     }
-    // Reset to "tentatively enabled" while probing so a stale verdict from
-    // the previous selection doesn't keep the button disabled mid-probe.
     setProbeNoMatch(false);
     let cancelled = false;
     pickFromMultiSelect({
@@ -165,8 +176,6 @@ export function PuzzleFilters({ excludeIds, onPick }: Props) {
       .catch((err) => {
         if (cancelled) return;
         console.error('[PuzzleFilters] probe failed', err);
-        // Don't permanently disable on import failure — handleStart's
-        // null-check is the real guard.
         setProbeNoMatch(false);
       });
     return () => {
@@ -174,39 +183,12 @@ export function PuzzleFilters({ excludeIds, onPick }: Props) {
     };
   }, [selectedTiers, selectedThemes, excludeIds]);
 
-  const startDisabled =
-    selectedTiers.size === 0 || selectedThemes.size === 0 || probeNoMatch;
-
   const showEmptyHint =
     selectedTiers.size > 0 && selectedThemes.size > 0 && probeNoMatch;
 
-  async function handleStart() {
-    if (startDisabled) return;
-    const pick = await pickFromMultiSelect({
-      tiers: Array.from(selectedTiers),
-      themes: Array.from(selectedThemes),
-      excludeIds,
-    });
-    // Re-check guards against a race where excludeIds shifted under us.
-    if (pick) onPick(pick);
-  }
-
   return (
     <div className="cr-card">
-      <div className="cr-card-hd">
-        <div className="cr-card-title">{t('puzzles.hub.filters.title')}</div>
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={startDisabled}
-          className="pz-filter-cta"
-        >
-          <Play size={13} />
-          {t('puzzles.hub.filters.start')}
-        </button>
-      </div>
-
-      <div className="px-4 pb-4 flex flex-col gap-4">
+      <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
         <section>
           <div className="pz-filter-section-hd">
             <div className="pz-filter-section-lbl">

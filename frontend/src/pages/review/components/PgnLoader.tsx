@@ -5,7 +5,7 @@ import {
   fetchRecentGames,
   formatGameLabel,
   type ChessComGame,
-} from '../utils/chessCom';
+} from '../../../shared/utils/chessCom';
 
 interface Props {
   onAnalyze: (pgn: string, depth: number, perspective?: 'white' | 'black') => void;
@@ -225,7 +225,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
           className={
             'w-full h-[38px] rounded-[9px] flex items-center justify-center gap-2 text-[13px] font-semibold transition-all ' +
             (canAnalyze
-              ? 'accent-grad text-[#1d1a14] hover:brightness-110'
+              ? 'accent-grad text-[#1d1a14] [.mode-light_&]:text-white hover:brightness-110'
               : 'bg-wood-hover text-ink-4 cursor-not-allowed')
           }
           style={{

@@ -27,15 +27,15 @@ export function SolverSideRail({ state, onHint, onReveal, onNext }: Props) {
     state.kind === 'awaiting-user-move' && state.hintLevel > 0;
 
   return (
-    <div className="pz-rail-l">
+    <div className="pz-actions-bar">
       <button
         type="button"
         onClick={onHint}
         disabled={!solving || state.kind !== 'awaiting-user-move'}
-        className={`pz-rail-btn ${hintActive ? 'active' : ''}`}
+        className={`pz-action-btn ${hintActive ? 'active' : ''}`}
         title={t('puzzles.solver.rail.hintTitle')}
       >
-        <Lightbulb size={18} />
+        <Lightbulb size={16} />
         <span>{t('puzzles.solver.rail.hint')}</span>
       </button>
 
@@ -43,10 +43,10 @@ export function SolverSideRail({ state, onHint, onReveal, onNext }: Props) {
         type="button"
         onClick={onReveal}
         disabled={!solving}
-        className="pz-rail-btn"
+        className="pz-action-btn"
         title={t('puzzles.solver.rail.revealTitle')}
       >
-        <Eye size={18} />
+        <Eye size={16} />
         <span>{t('puzzles.solver.rail.reveal')}</span>
       </button>
 
@@ -54,10 +54,10 @@ export function SolverSideRail({ state, onHint, onReveal, onNext }: Props) {
         type="button"
         onClick={onNext}
         disabled={!nextEnabled}
-        className="pz-rail-btn"
+        className="pz-action-btn"
         title={t('puzzles.solver.rail.nextTitle')}
       >
-        <ChevronRight size={18} />
+        <ChevronRight size={16} />
         <span>{t('puzzles.solver.rail.next')}</span>
       </button>
     </div>

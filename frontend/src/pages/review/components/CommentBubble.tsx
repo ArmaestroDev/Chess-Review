@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import type { MoveAnalysis } from '../types';
+import type { MoveAnalysis } from '../../../shared/types';
 import {
   ClassificationIcon,
   useClassificationLabel,
-} from './ClassificationIcon';
-import { formatScore } from '../utils/winProb';
+} from '../../../shared/components/ClassificationIcon';
+import { formatScore } from '../../../shared/utils/winProb';
 
 interface Props {
   move: MoveAnalysis | null;

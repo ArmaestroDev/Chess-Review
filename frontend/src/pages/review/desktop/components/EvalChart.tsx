@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import type { MoveAnalysis } from '../types';
-import { scoreToCp, whiteWinProbability } from '../utils/winProb';
-import { classificationColor } from './ClassificationIcon';
+import type { MoveAnalysis } from '../../../../shared/types';
+import { scoreToCp, whiteWinProbability } from '../../../../shared/utils/winProb';
+import { classificationColor } from '../../../../shared/components/ClassificationIcon';
 
 interface Props {
   moves: MoveAnalysis[];
