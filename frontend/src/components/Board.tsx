@@ -24,9 +24,16 @@ interface Props {
   /** Optional classification badge anchored to a square (top-right corner). */
   badge?: { square: string; classification: MoveClassification } | null;
   /**
-   * If provided, pieces of the side-to-move are draggable. The callback
-   * receives a UCI string (e.g. "e2e4", "e7e8q") for legal moves only.
-   * Returning a Promise from the handler is fine — drag accepts immediately.
+   * Restrict draggable pieces to a specific color. When omitted (review's
+   * default) the FEN's side-to-move governs draggability. Puzzle solver
+   * passes 'w' or 'b' so the locked side never moves even when it's that
+   * side's turn (e.g. while the opponent's reply is animating).
+   */
+  playableColor?: 'w' | 'b';
+  /**
+   * If provided, pieces are draggable. The callback receives a UCI string
+   * (e.g. "e2e4", "e7e8q") for legal moves only. Returning a Promise from
+   * the handler is fine — drag accepts immediately.
    */
   onMove?: (uci: string) => void;
 }
@@ -38,6 +45,7 @@ export function Board({
   highlightedSquares,
   arrows,
   badge,
+  playableColor,
   onMove,
 }: Props) {
   const customSquareStyles = useMemo<Record<string, CSSProperties>>(() => {
@@ -61,6 +69,9 @@ export function Board({
 
   // FEN's second whitespace-separated field is the side to move.
   const sideToMove = (fen.split(' ')[1] ?? 'w') as 'w' | 'b';
+  // When playableColor is set, gate by it instead of side-to-move so the
+  // locked side never moves (e.g. during an animating opponent reply).
+  const draggableColor = playableColor ?? sideToMove;
   const draggable = !!onMove;
 
   return (
@@ -90,7 +101,7 @@ export function Board({
         }}
         isDraggablePiece={
           draggable
-            ? ({ piece }: { piece: string }) => piece?.[0] === sideToMove
+            ? ({ piece }: { piece: string }) => piece?.[0] === draggableColor
             : undefined
         }
         onPieceDrop={

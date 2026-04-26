@@ -1,0 +1,648 @@
+/*
+ * Puzzles feature styles. Ported from ChessReview.html's `.pz-*` namespace
+ * with hardcoded design colors replaced by theme tokens (rgb(var(--…))) so
+ * the puzzle UI follows the active theme + light/dark mode.
+ *
+ * Hub styles will be added when Phase 4 lands.
+ */
+
+/* ─── Solver shell ──────────────────────────────────────────── */
+
+.pz-solver {
+  @apply flex flex-col gap-4 px-7 py-4 max-w-[1600px] mx-auto w-full;
+}
+
+.pz-solver-top {
+  @apply flex items-center justify-between px-4 py-3 rounded-card border;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+.pz-back {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12.5px] font-medium rounded-md border-0 transition-colors;
+  background: transparent;
+  color: rgb(var(--ink-2));
+}
+.pz-back:hover {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+
+.pz-top-meta {
+  @apply flex items-center gap-2.5;
+}
+.pz-top-theme {
+  @apply inline-flex items-center gap-2 text-[13px] font-semibold;
+  color: rgb(var(--ink-default));
+}
+.pz-top-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+}
+
+.pz-streak {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full;
+  background: var(--accent-soft);
+}
+.pz-streak-flame {
+  @apply text-[11px];
+  color: rgb(var(--accent-default));
+}
+.pz-streak-num {
+  @apply text-[13px] font-bold;
+  color: rgb(var(--accent-ink));
+}
+.pz-streak-lbl {
+  @apply text-[10.5px] tracking-[0.02em];
+  color: rgb(var(--accent-ink));
+  opacity: 0.8;
+}
+
+/* ─── Solver grid ──────────────────────────────────────────── */
+
+.pz-solver-grid {
+  @apply grid gap-4 items-start;
+  grid-template-columns: 56px minmax(0, 1fr) 360px;
+}
+
+/* ─── Left rail ────────────────────────────────────────────── */
+
+.pz-rail-l {
+  @apply flex flex-col gap-1 p-1.5 rounded-card border sticky top-20;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
+}
+.pz-rail-btn {
+  @apply flex flex-col items-center gap-1 px-1 py-2.5 border-0 rounded-lg transition-colors;
+  background: transparent;
+  color: rgb(var(--ink-2));
+}
+.pz-rail-btn:hover:not(:disabled) {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+.pz-rail-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pz-rail-btn span {
+  @apply text-[10px] font-medium tracking-[0.02em];
+}
+.pz-rail-btn.active {
+  background: var(--accent-soft);
+  color: rgb(var(--accent-ink));
+}
+
+/* ─── Board wrap + feedback toast ─────────────────────────── */
+
+.pz-board-wrap {
+  @apply relative aspect-square rounded-xl overflow-hidden;
+  background: rgb(var(--wood-card));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 30px rgba(0, 0, 0, 0.55),
+    0 0 0 0.5px var(--line-2);
+}
+
+.pz-feedback {
+  @apply absolute top-3.5 left-3.5 inline-flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[13px] font-semibold;
+  color: #fdfbf5;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  animation: pz-fade 0.25s ease-out;
+}
+.pz-feedback.correct {
+  background: rgba(58, 125, 58, 0.94);
+}
+.pz-feedback.wrong {
+  background: rgba(181, 70, 50, 0.94);
+}
+@keyframes pz-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Right info panel ─────────────────────────────────────── */
+
+.pz-info {
+  @apply flex flex-col gap-3.5;
+}
+
+.pz-info-body {
+  @apply px-4 pb-3.5 flex flex-col gap-3;
+}
+
+.pz-prompt {
+  @apply flex items-start gap-2.5 text-[13px] leading-[1.5];
+  color: rgb(var(--ink-default));
+}
+.pz-prompt-bullet {
+  @apply w-2.5 h-2.5 rounded-full mt-1.5 shrink-0;
+  background: rgb(var(--accent-default));
+}
+
+.pz-hint {
+  @apply px-3 py-2.5 rounded-lg border;
+  background: var(--accent-soft);
+  border-color: rgba(216, 181, 106, 0.3);
+}
+.pz-hint-label {
+  @apply text-[10px] uppercase tracking-[0.06em] font-semibold mb-1;
+  color: rgb(var(--accent-ink));
+}
+.pz-hint-text {
+  @apply text-[12.5px] leading-[1.5] font-mono;
+  color: rgb(var(--ink-2));
+}
+
+.pz-themes {
+  @apply flex gap-1.5 flex-wrap;
+}
+
+/* ─── Result panel ─────────────────────────────────────────── */
+
+.pz-result {
+  @apply px-4 py-4 rounded-card border;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
+}
+.pz-result.correct {
+  border-color: rgba(58, 125, 58, 0.30);
+  background: linear-gradient(
+    180deg,
+    rgba(58, 125, 58, 0.06),
+    rgb(var(--wood-card)) 60%
+  );
+}
+.pz-result.wrong,
+.pz-result.revealed {
+  border-color: rgba(181, 70, 50, 0.25);
+  background: linear-gradient(
+    180deg,
+    rgba(181, 70, 50, 0.06),
+    rgb(var(--wood-card)) 60%
+  );
+}
+
+.pz-result-hd {
+  @apply flex items-center gap-2.5 pb-2.5 border-b;
+  border-color: var(--line);
+}
+.pz-result-icon {
+  @apply w-7 h-7 rounded-lg inline-flex items-center justify-center;
+}
+.pz-result-icon.correct {
+  background: rgba(58, 125, 58, 0.14);
+  color: #4ea44e;
+}
+.pz-result-icon.wrong {
+  background: rgba(181, 70, 50, 0.14);
+  color: #d6443a;
+}
+.pz-result-icon.revealed {
+  background: var(--accent-soft);
+  color: rgb(var(--accent-ink));
+}
+.pz-result-title {
+  @apply flex-1 font-serif text-[17px] font-semibold tracking-[-0.01em];
+  color: rgb(var(--ink-default));
+}
+.pz-result-delta {
+  @apply text-[13px] font-semibold;
+  color: rgb(var(--ink-3));
+}
+.pz-result.correct .pz-result-delta {
+  color: #4ea44e;
+}
+.pz-result.wrong .pz-result-delta,
+.pz-result.revealed .pz-result-delta {
+  color: #d6443a;
+}
+
+.pz-bestline {
+  @apply py-3 border-b;
+  border-color: var(--line);
+}
+.pz-bestline-label {
+  @apply text-[10px] uppercase tracking-[0.06em] font-semibold mb-1.5;
+  color: rgb(var(--ink-3));
+}
+.pz-bestline-moves {
+  @apply flex flex-wrap items-baseline gap-1.5 text-[12.5px];
+  color: rgb(var(--ink-default));
+}
+.pz-bl-num {
+  @apply text-[11px] font-mono;
+  color: rgb(var(--ink-4));
+}
+.pz-bl-mv {
+  @apply font-medium font-mono;
+}
+
+.pz-explanation {
+  @apply py-3 text-[12.5px] leading-[1.55];
+  color: rgb(var(--ink-2));
+  text-wrap: pretty;
+}
+
+.pz-result-actions {
+  @apply flex gap-2;
+}
+.pz-result-actions > * {
+  flex: 1;
+}
+
+/* ─── Buttons used in solver/result ────────────────────────── */
+
+.pz-btn-primary {
+  @apply inline-flex items-center justify-center gap-2 h-10 rounded-[9px] border-0 text-[13px] font-semibold transition-colors;
+  background: linear-gradient(180deg, rgb(var(--wood-light)), rgb(var(--wood-dark)));
+  color: rgb(var(--ink-default));
+  box-shadow:
+    inset 0 1px 0 var(--accent-soft),
+    0 1px 2px rgba(0, 0, 0, 0.16);
+}
+.pz-btn-primary:hover {
+  background: linear-gradient(180deg, rgb(var(--wood-hover)), rgb(var(--wood-card)));
+}
+
+.pz-btn-secondary {
+  @apply h-10 px-3 rounded-[9px] border text-[13px] font-medium transition-colors;
+  background: rgb(var(--wood-card));
+  border-color: var(--line-2);
+  color: rgb(var(--ink-2));
+}
+.pz-btn-secondary:hover {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+
+/* ─── Hub layout ───────────────────────────────────────────── */
+
+.pz-hub {
+  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start;
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+.pz-hub-l {
+  @apply flex flex-col gap-4 min-w-0;
+}
+.pz-hub-r {
+  @apply flex flex-col gap-4 min-w-0;
+}
+
+/* ─── Daily card ──────────────────────────────────────────── */
+
+.pz-daily {
+  @apply grid overflow-hidden rounded-card border;
+  grid-template-columns: 1fr 220px;
+  border-color: var(--line);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--wood-card)) 0%,
+    rgb(var(--wood-panel)) 100%
+  );
+  background-image:
+    linear-gradient(180deg, var(--accent-softer), transparent 50%),
+    linear-gradient(135deg, rgb(var(--wood-card)), rgb(var(--wood-panel)));
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.25));
+}
+.pz-daily-l {
+  @apply flex flex-col gap-2.5 px-5 pt-5 pb-4;
+}
+.pz-daily-eyebrow {
+  @apply text-[10.5px] uppercase tracking-[0.08em] font-semibold;
+  color: rgb(var(--accent-default));
+}
+.pz-daily-title {
+  @apply font-serif text-[22px] font-semibold leading-[1.2] tracking-[-0.015em];
+  color: rgb(var(--ink-default));
+  text-wrap: balance;
+}
+.pz-daily-meta {
+  @apply flex items-center gap-2 flex-wrap mt-1;
+}
+.pz-daily-solvers {
+  @apply text-[11px];
+  color: rgb(var(--ink-3));
+}
+.pz-daily-cta {
+  @apply inline-flex items-center gap-2 px-4 h-9 rounded-[9px] self-start mt-2 border-0 text-[13px] font-semibold transition-colors;
+  background: linear-gradient(180deg, rgb(var(--wood-light)), rgb(var(--wood-dark)));
+  color: rgb(var(--ink-default));
+  box-shadow:
+    inset 0 1px 0 var(--accent-soft),
+    0 1px 2px rgba(0, 0, 0, 0.16);
+}
+.pz-daily-cta:hover {
+  background: linear-gradient(180deg, rgb(var(--wood-hover)), rgb(var(--wood-card)));
+}
+.pz-daily-cta svg {
+  color: rgb(var(--accent-default));
+}
+.pz-daily-board {
+  @apply flex items-center p-3.5;
+}
+.pz-daily-board > div {
+  @apply w-full aspect-square rounded-lg overflow-hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.18),
+    0 0 0 0.5px var(--line-2);
+}
+
+/* ─── Themes card ─────────────────────────────────────────── */
+
+.pz-themes-card {
+  @apply pb-3.5;
+}
+
+.pz-diff-filter {
+  @apply flex gap-0.5 p-0.5 rounded-full;
+  background: rgb(var(--wood-dark) / 0.6);
+}
+.pz-diff-pill {
+  @apply px-2.5 py-1 rounded-full text-[10.5px] font-medium border-0 capitalize transition-colors;
+  background: transparent;
+  color: rgb(var(--ink-3));
+}
+.pz-diff-pill:hover {
+  color: rgb(var(--ink-default));
+}
+.pz-diff-pill.on {
+  background: rgb(var(--wood-card));
+  color: rgb(var(--ink-default));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.pz-theme-grid {
+  @apply grid gap-px mx-4 mt-1 rounded-[10px] overflow-hidden;
+  grid-template-columns: 1fr 1fr;
+  background: var(--line);
+}
+.pz-theme-card {
+  @apply grid gap-3 items-center px-3.5 py-3 border-0 text-left transition-colors;
+  grid-template-columns: 36px 1fr 16px;
+  background: rgb(var(--wood-card));
+}
+.pz-theme-card:hover {
+  background: rgb(var(--wood-hover));
+}
+.pz-theme-glyph {
+  @apply w-9 h-9 rounded-lg inline-flex items-center justify-center font-mono text-[13px] font-semibold border;
+  background: rgb(var(--wood-panel));
+  color: rgb(var(--ink-default));
+  border-color: var(--line-2);
+}
+.pz-theme-glyph.diff-easy {
+  background: rgba(58, 125, 58, 0.12);
+  color: #4ea44e;
+  border-color: rgba(58, 125, 58, 0.30);
+}
+.pz-theme-glyph.diff-medium {
+  background: var(--accent-soft);
+  color: rgb(var(--accent-ink));
+  border-color: rgba(216, 181, 106, 0.30);
+}
+.pz-theme-glyph.diff-hard {
+  background: rgba(196, 106, 42, 0.16);
+  color: #d6843a;
+  border-color: rgba(196, 106, 42, 0.32);
+}
+.pz-theme-glyph.diff-expert {
+  background: rgba(214, 68, 58, 0.14);
+  color: #d6443a;
+  border-color: rgba(214, 68, 58, 0.30);
+}
+.pz-theme-info {
+  @apply flex flex-col gap-0.5 min-w-0;
+}
+.pz-theme-name {
+  @apply text-[13px] font-semibold;
+  color: rgb(var(--ink-default));
+}
+.pz-theme-meta {
+  @apply text-[10.5px] capitalize;
+  color: rgb(var(--ink-3));
+}
+.pz-theme-arrow {
+  @apply text-[14px] transition-transform;
+  color: rgb(var(--ink-4));
+}
+.pz-theme-card:hover .pz-theme-arrow {
+  transform: translateX(2px);
+  color: rgb(var(--accent-default));
+}
+
+/* ─── Progress card ───────────────────────────────────────── */
+
+.pz-progress {
+  @apply pb-4;
+}
+.pz-rating-row {
+  @apply flex items-baseline gap-2.5 px-4;
+}
+.pz-rating-num {
+  @apply text-[36px] font-semibold leading-none tracking-[-0.02em];
+  color: rgb(var(--ink-default));
+}
+.pz-rating-delta {
+  @apply text-[13px] font-semibold px-2 py-0.5 rounded-md;
+}
+.pz-rating-delta.up {
+  color: #4ea44e;
+  background: rgba(58, 125, 58, 0.12);
+}
+.pz-rating-delta.down {
+  color: #d6443a;
+  background: rgba(181, 70, 50, 0.12);
+}
+.pz-rating-label {
+  @apply text-[11px] px-4 pt-1;
+  color: rgb(var(--ink-3));
+}
+.pz-stat-grid {
+  @apply grid gap-px mx-4 mt-3.5 rounded-lg overflow-hidden;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: var(--line);
+}
+.pz-stat {
+  @apply text-center py-2.5 px-2;
+  background: rgb(var(--wood-card));
+}
+.pz-stat-num {
+  @apply text-[18px] font-semibold leading-tight;
+  color: rgb(var(--ink-default));
+}
+.pz-stat-lbl {
+  @apply text-[10.5px] tracking-[0.02em] mt-0.5;
+  color: rgb(var(--ink-3));
+}
+
+/* ─── Activity bars ───────────────────────────────────────── */
+
+.pz-activity {
+  @apply pb-3.5;
+}
+.pz-bars {
+  @apply grid gap-1.5 px-4 pt-1 items-end;
+  grid-template-columns: repeat(7, 1fr);
+  height: 80px;
+}
+.pz-bar-col {
+  @apply flex flex-col items-center gap-1.5 h-full;
+}
+.pz-bar-track {
+  @apply flex-1 w-full flex items-end rounded-md overflow-hidden;
+  background: rgb(var(--wood-dark) / 0.6);
+}
+.pz-bar-fill {
+  @apply w-full rounded-md;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--accent-default)),
+    rgb(var(--accent-ink))
+  );
+  min-height: 4px;
+  transition: height 0.3s;
+}
+.pz-bar-day {
+  @apply text-[10px] font-mono;
+  color: rgb(var(--ink-4));
+}
+
+/* ─── Filters card ────────────────────────────────────────── */
+
+.pz-filter-cta {
+  @apply inline-flex items-center gap-1.5 px-3 h-8 rounded-[8px] border-0 text-[12px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+  background: linear-gradient(180deg, rgb(var(--wood-light)), rgb(var(--wood-dark)));
+  color: rgb(var(--ink-default));
+  box-shadow:
+    inset 0 1px 0 var(--accent-soft),
+    0 1px 2px rgba(0, 0, 0, 0.16);
+}
+.pz-filter-cta:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgb(var(--wood-hover)), rgb(var(--wood-card)));
+}
+.pz-filter-cta svg {
+  color: rgb(var(--accent-default));
+}
+
+.pz-filter-section-hd {
+  @apply flex items-center justify-between mb-2;
+}
+.pz-filter-section-lbl {
+  @apply text-[10.5px] uppercase tracking-[0.06em] font-semibold;
+  color: rgb(var(--ink-3));
+}
+.pz-filter-selectall {
+  @apply text-[11px] underline-offset-2 hover:underline border-0 bg-transparent;
+  color: rgb(var(--ink-3));
+}
+.pz-filter-selectall:hover {
+  color: rgb(var(--ink-default));
+}
+
+.pz-filter-tiers {
+  @apply grid gap-1.5;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.pz-filter-pill {
+  @apply h-8 px-2 rounded-[8px] border text-[11.5px] font-medium transition-colors truncate;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  color: rgb(var(--ink-2));
+}
+.pz-filter-pill:hover {
+  border-color: var(--line-2);
+  color: rgb(var(--ink-default));
+}
+.pz-filter-pill.on {
+  background: var(--accent-soft);
+  border-color: rgb(var(--accent-default));
+  color: rgb(var(--accent-ink));
+}
+
+.pz-filter-themes {
+  @apply grid gap-1.5;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 480px) {
+  .pz-filter-themes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.pz-filter-theme {
+  @apply inline-flex items-center gap-1.5 h-8 px-2 rounded-[8px] border text-[11.5px] font-medium text-left transition-colors;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  color: rgb(var(--ink-2));
+}
+.pz-filter-theme:hover {
+  border-color: var(--line-2);
+  color: rgb(var(--ink-default));
+}
+.pz-filter-theme.on {
+  background: var(--accent-soft);
+  border-color: rgb(var(--accent-default));
+  color: rgb(var(--accent-ink));
+}
+.pz-filter-theme-check {
+  @apply w-3.5 h-3.5 inline-flex items-center justify-center rounded-[3px] shrink-0;
+  background: rgb(var(--wood-panel));
+  border: 1px solid var(--line-2);
+  color: transparent;
+}
+.pz-filter-theme.on .pz-filter-theme-check {
+  background: rgb(var(--accent-default));
+  border-color: rgb(var(--accent-default));
+  color: #1d1a14;
+}
+.pz-filter-theme-label {
+  @apply truncate min-w-0;
+}
+
+.pz-filter-empty {
+  @apply text-[11.5px] text-center;
+  color: rgb(var(--ink-3));
+}
+
+/* ─── Weakness card ──────────────────────────────────────── */
+
+.pz-weakness {
+  @apply pb-3.5;
+}
+.pz-weak-list {
+  @apply flex flex-col px-4 pt-1 gap-1.5;
+}
+.pz-weak-row {
+  @apply grid gap-2.5 items-center py-1.5 border-b border-0;
+  grid-template-columns: 1fr 80px 32px;
+  border-bottom: 0.5px solid var(--line);
+}
+.pz-weak-row:last-child {
+  border-bottom: 0;
+}
+.pz-weak-theme {
+  @apply text-[12px] font-medium;
+  color: rgb(var(--ink-default));
+}
+.pz-weak-track {
+  @apply h-1 rounded-sm overflow-hidden;
+  background: rgb(var(--wood-dark) / 0.6);
+}
+.pz-weak-fill {
+  @apply block h-full;
+  background: linear-gradient(90deg, #d6443a, rgb(var(--accent-default)));
+}
+.pz-weak-pct {
+  @apply text-[11px] font-medium text-right;
+  color: rgb(var(--ink-3));
+}

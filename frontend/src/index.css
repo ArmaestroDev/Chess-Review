@@ -142,9 +142,151 @@
   --board-dark: #2c6e60;
 }
 
-:root {
-  color-scheme: dark;
+/*
+ * Light-mode variants. Each is paired with one dark theme and shares the
+ * same accent hue. The ink/wood scales invert: in light mode, --wood-default
+ * is the page background (a pale tint), --wood-card is the brightest surface,
+ * --wood-dark/-panel/-hover are subtly recessed, and --ink-default is a
+ * deep saturated counterpart to the accent.
+ */
+
+.theme-wood.mode-light {
+  --wood-default: 245 241 232;  /* #f5f1e8 — page bg */
+  --wood-dark: 239 233 220;     /* #efe9dc — recessed track */
+  --wood-light: 253 251 245;    /* #fdfbf5 — brightest */
+  --wood-panel: 247 241 227;    /* #f7f1e3 */
+  --wood-card: 253 251 245;     /* #fdfbf5 — card surface */
+  --wood-hover: 247 241 227;    /* #f7f1e3 */
+
+  --ink-default: 29 26 20;      /* #1d1a14 */
+  --ink-2: 60 53 39;            /* #3c3527 */
+  --ink-3: 107 98 83;           /* #6b6253 */
+  --ink-4: 155 148 134;         /* #9b9486 */
+  --ink-5: 200 195 180;         /* #c8c3b4 */
+
+  --line: rgba(60, 50, 35, 0.10);
+  --line-2: rgba(60, 50, 35, 0.18);
+
+  --accent-default: 184 134 43; /* #b8862b */
+  --accent-ink: 107 77 16;      /* #6b4d10 */
+  --accent-soft: rgba(184, 134, 43, 0.14);
+  --accent-softer: rgba(184, 134, 43, 0.07);
+
+  --bg-grad-1: rgba(184, 134, 43, 0.06);
+  --bg-grad-2: rgba(60, 50, 35, 0.04);
+  --bg-from: #fdfbf5;
+  --bg-mid: #f5f1e8;
+  --bg-to: #efe9dc;
+  --bg-noise: rgba(60, 50, 35, 0.02);
+
+  --board-light: #ebd8b7;
+  --board-dark: #8c6f4f;
 }
+
+.theme-purple.mode-light {
+  --wood-default: 247 243 251;  /* #f7f3fb */
+  --wood-dark: 240 232 245;     /* #f0e8f5 */
+  --wood-light: 252 250 255;    /* #fcfaff */
+  --wood-panel: 244 237 250;    /* #f4edfa */
+  --wood-card: 252 250 255;
+  --wood-hover: 244 237 250;
+
+  --ink-default: 42 29 68;      /* #2a1d44 */
+  --ink-2: 74 59 107;           /* #4a3b6b */
+  --ink-3: 107 90 139;          /* #6b5a8b */
+  --ink-4: 149 134 159;         /* #95869f */
+  --ink-5: 196 185 210;         /* #c4b9d2 */
+
+  --line: rgba(60, 40, 100, 0.10);
+  --line-2: rgba(60, 40, 100, 0.18);
+
+  --accent-default: 124 92 209; /* #7c5cd1 */
+  --accent-ink: 74 47 140;      /* #4a2f8c */
+  --accent-soft: rgba(124, 92, 209, 0.14);
+  --accent-softer: rgba(124, 92, 209, 0.07);
+
+  --bg-grad-1: rgba(124, 92, 209, 0.07);
+  --bg-grad-2: rgba(60, 40, 100, 0.04);
+  --bg-from: #fcfaff;
+  --bg-mid: #f7f3fb;
+  --bg-to: #f0e8f5;
+  --bg-noise: rgba(60, 40, 100, 0.02);
+
+  --board-light: #e9e1f4;
+  --board-dark: #8b6dc8;
+}
+
+.theme-ocean.mode-light {
+  --wood-default: 238 243 248;  /* #eef3f8 */
+  --wood-dark: 227 236 242;     /* #e3ecf2 */
+  --wood-light: 248 250 252;    /* #f8fafc */
+  --wood-panel: 232 240 246;    /* #e8f0f6 */
+  --wood-card: 248 250 252;
+  --wood-hover: 232 240 246;
+
+  --ink-default: 26 41 64;      /* #1a2940 */
+  --ink-2: 44 62 90;            /* #2c3e5a */
+  --ink-3: 79 96 122;           /* #4f607a */
+  --ink-4: 125 139 160;         /* #7d8ba0 */
+  --ink-5: 184 195 210;         /* #b8c3d2 */
+
+  --line: rgba(40, 60, 90, 0.10);
+  --line-2: rgba(40, 60, 90, 0.18);
+
+  --accent-default: 58 122 178; /* #3a7ab2 */
+  --accent-ink: 31 74 120;      /* #1f4a78 */
+  --accent-soft: rgba(58, 122, 178, 0.14);
+  --accent-softer: rgba(58, 122, 178, 0.07);
+
+  --bg-grad-1: rgba(58, 122, 178, 0.07);
+  --bg-grad-2: rgba(40, 60, 90, 0.04);
+  --bg-from: #f8fafc;
+  --bg-mid: #eef3f8;
+  --bg-to: #e3ecf2;
+  --bg-noise: rgba(40, 60, 90, 0.02);
+
+  --board-light: #dde6ef;
+  --board-dark: #5a7894;
+}
+
+.theme-lagoon.mode-light {
+  --wood-default: 239 247 244;  /* #eff7f4 */
+  --wood-dark: 226 239 234;     /* #e2efea */
+  --wood-light: 248 252 250;    /* #f8fcfa */
+  --wood-panel: 232 244 240;    /* #e8f4f0 */
+  --wood-card: 248 252 250;
+  --wood-hover: 232 244 240;
+
+  --ink-default: 16 52 47;      /* #10342f */
+  --ink-2: 34 74 68;             /* #224a44 */
+  --ink-3: 70 106 100;           /* #466a64 */
+  --ink-4: 118 149 143;          /* #76958f */
+  --ink-5: 178 204 195;          /* #b2ccc3 */
+
+  --line: rgba(30, 70, 60, 0.10);
+  --line-2: rgba(30, 70, 60, 0.18);
+
+  --accent-default: 45 128 104;  /* #2d8068 */
+  --accent-ink: 26 90 72;        /* #1a5a48 */
+  --accent-soft: rgba(45, 128, 104, 0.14);
+  --accent-softer: rgba(45, 128, 104, 0.07);
+
+  --bg-grad-1: rgba(45, 128, 104, 0.07);
+  --bg-grad-2: rgba(30, 70, 60, 0.04);
+  --bg-from: #f8fcfa;
+  --bg-mid: #eff7f4;
+  --bg-to: #e2efea;
+  --bg-noise: rgba(30, 70, 60, 0.02);
+
+  --board-light: #d8ebe2;
+  --board-dark: #4f7d6e;
+}
+
+/* color-scheme follows the active mode so native scrollbars / autofill
+   / form controls render with the correct contrast. */
+.mode-dark { color-scheme: dark; }
+.mode-light { color-scheme: light; }
+:root:not(.mode-light) { color-scheme: dark; }
 
 html,
 body,
@@ -157,7 +299,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   font-feature-settings: 'cv11', 'ss01', 'ss03';
   color: rgb(var(--ink-default));
-  background: rgb(var(--wood-dark));
+  background: rgb(var(--wood-default));
   -webkit-font-smoothing: antialiased;
 }
 
@@ -206,11 +348,16 @@ body {
   @apply bg-line-2;
 }
 
-/* Sticky header — uses themed wood-dark with translucency. */
+/* Sticky header — uses themed wood-dark with translucency in dark mode
+   (recessed header on a darker page); in light mode the relationship
+   inverts so we use wood-card (raised brighter surface above cream page). */
 .cr-header {
   background: rgb(var(--wood-dark) / 0.72);
   backdrop-filter: blur(20px);
   border-bottom: 0.5px solid var(--line);
+}
+.mode-light .cr-header {
+  background: rgb(var(--wood-card) / 0.7);
 }
 
 /* Scrollbar */

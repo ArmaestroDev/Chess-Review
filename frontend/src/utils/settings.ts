@@ -1,35 +1,60 @@
 // User-facing settings persisted to localStorage. Cheap, no auth required.
 
 export type ThemeId = 'wood' | 'purple' | 'ocean' | 'lagoon';
+export type ThemeMode = 'light' | 'dark';
+export type Language = 'en' | 'de';
 
 export interface Settings {
   theme: ThemeId;
+  mode: ThemeMode;
   chessComUsername: string;
+  language: Language;
 }
 
 const KEY = 'chess-engine-settings';
 
+const VALID_LANGUAGES: Language[] = ['en', 'de'];
+
+/** Pick the initial language from the browser if no saved value exists. */
+export function detectBrowserLanguage(): Language {
+  const navLang =
+    typeof navigator !== 'undefined' ? navigator.language ?? '' : '';
+  return navLang.toLowerCase().startsWith('de') ? 'de' : 'en';
+}
+
 const DEFAULT: Settings = {
   theme: 'wood',
+  mode: 'light',
   chessComUsername: '',
+  language: 'de',
 };
+
+const VALID_MODES: ThemeMode[] = ['light', 'dark'];
 
 export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { ...DEFAULT };
+    if (!raw) {
+      return { ...DEFAULT, language: detectBrowserLanguage() };
+    }
     const parsed = JSON.parse(raw) as Partial<Settings>;
     return {
       theme: VALID_THEMES.includes(parsed.theme as ThemeId)
         ? (parsed.theme as ThemeId)
         : DEFAULT.theme,
+      mode: VALID_MODES.includes(parsed.mode as ThemeMode)
+        ? (parsed.mode as ThemeMode)
+        : DEFAULT.mode,
       chessComUsername:
         typeof parsed.chessComUsername === 'string'
           ? parsed.chessComUsername
           : DEFAULT.chessComUsername,
+      language: VALID_LANGUAGES.includes(parsed.language as Language)
+        ? (parsed.language as Language)
+        : detectBrowserLanguage(),
     };
   } catch {
-    return { ...DEFAULT };
+    return { ...DEFAULT, language: detectBrowserLanguage() };
   }
 }
 
@@ -87,11 +112,15 @@ export const THEMES: ThemePreview[] = [
 
 const VALID_THEMES: ThemeId[] = THEMES.map((t) => t.id);
 
-/** Apply the chosen theme to <html> by setting its class. */
-export function applyTheme(theme: ThemeId): void {
+/** Apply the chosen theme + mode to <html> by setting two classes. */
+export function applyTheme(theme: ThemeId, mode: ThemeMode): void {
   const root = document.documentElement;
   for (const t of VALID_THEMES) {
     root.classList.remove(`theme-${t}`);
   }
+  for (const m of VALID_MODES) {
+    root.classList.remove(`mode-${m}`);
+  }
   root.classList.add(`theme-${theme}`);
+  root.classList.add(`mode-${mode}`);
 }

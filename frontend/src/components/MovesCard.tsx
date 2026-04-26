@@ -7,6 +7,7 @@ import {
   Pause,
   Star,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { MoveTree, NodeId } from '../types';
 import { fullMainline } from '../utils/tree';
 import { MoveList } from './MoveList';
@@ -40,14 +41,17 @@ export function MovesCard({
   showingBest,
   canShowBest,
 }: Props) {
+  const { t } = useTranslation();
   const totalPlies = Math.max(0, fullMainline(tree).length - 1);
 
   return (
     <div className="cr-card flex flex-col" style={{ maxHeight: 'calc(100vh - 320px)' }}>
       <div className="cr-card-hd">
-        <div className="cr-card-title">Moves</div>
+        <div className="cr-card-title">{t('review.moves.title')}</div>
         {totalPlies > 0 && (
-          <span className="cr-pill cr-pill-mono">{totalPlies} plies</span>
+          <span className="cr-pill cr-pill-mono">
+            {t('review.moves.plies', { count: totalPlies })}
+          </span>
         )}
       </div>
 
@@ -59,25 +63,30 @@ export function MovesCard({
 
       {/* Controls */}
       <div className="flex items-center gap-1 px-3 py-2.5 border-t border-line bg-wood-dark/40">
-        <CtrlBtn onClick={onJumpFirst} title="Start">
+        <CtrlBtn onClick={onJumpFirst} title={t('review.controls.start')}>
           <ChevronsLeft size={16} />
         </CtrlBtn>
-        <CtrlBtn onClick={onJumpPrev} title="Previous">
+        <CtrlBtn onClick={onJumpPrev} title={t('review.controls.previous')}>
           <ChevronLeft size={16} />
         </CtrlBtn>
-        <CtrlBtn onClick={onTogglePlay} title="Play/Pause" emphasized active={isPlaying}>
+        <CtrlBtn
+          onClick={onTogglePlay}
+          title={t('review.controls.playPause')}
+          emphasized
+          active={isPlaying}
+        >
           {isPlaying ? <Pause size={16} /> : <Play size={16} />}
         </CtrlBtn>
-        <CtrlBtn onClick={onJumpNext} title="Next">
+        <CtrlBtn onClick={onJumpNext} title={t('review.controls.next')}>
           <ChevronRight size={16} />
         </CtrlBtn>
-        <CtrlBtn onClick={onJumpLast} title="End">
+        <CtrlBtn onClick={onJumpLast} title={t('review.controls.end')}>
           <ChevronsRight size={16} />
         </CtrlBtn>
         <div className="flex-1" />
         <CtrlBtn
           onClick={onShowBest}
-          title="Show best move"
+          title={t('review.controls.showBest')}
           active={showingBest}
           disabled={!canShowBest}
         >

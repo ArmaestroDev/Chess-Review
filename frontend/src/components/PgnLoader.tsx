@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   fetchRecentGames,
   formatGameLabel,
@@ -28,6 +29,7 @@ const SAMPLE_PGN = `[Event "Sample"]
 type Tab = 'chesscom' | 'pgn';
 
 export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('chesscom');
   const [pgn, setPgn] = useState('');
   const [depth, setDepth] = useState(14);
@@ -62,7 +64,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
     try {
       const result = await fetchRecentGames(u, 30);
       if (result.length === 0) {
-        setChessComError(`No standard-chess games found for "${u}".`);
+        setChessComError(t('review.source.chesscom.noGames', { username: u }));
       } else {
         setGames(result);
         setPerspective(u);
@@ -71,8 +73,8 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
     } catch (err) {
       const msg =
         (err as Error & { code?: string }).code === 'not_found'
-          ? `Chess.com user "${u}" not found.`
-          : (err as Error).message || 'Failed to load games from chess.com.';
+          ? t('review.source.chesscom.userNotFound', { username: u })
+          : (err as Error).message || t('review.source.chesscom.loadFailed');
       setChessComError(msg);
     } finally {
       setLoadingGames(false);
@@ -109,16 +111,16 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
   return (
     <div className="cr-card">
       <div className="cr-card-hd">
-        <div className="cr-card-title">Source</div>
+        <div className="cr-card-title">{t('review.source.title')}</div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-0.5 p-[3px] mx-4 bg-wood-dark/60 rounded-lg">
         <TabBtn active={tab === 'chesscom'} onClick={() => setTab('chesscom')}>
-          chess.com
+          {t('review.source.tabs.chesscom')}
         </TabBtn>
         <TabBtn active={tab === 'pgn'} onClick={() => setTab('pgn')}>
-          Paste PGN
+          {t('review.source.tabs.pgn')}
         </TabBtn>
       </div>
 
@@ -126,7 +128,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
         {tab === 'chesscom' ? (
           <div className="flex flex-col gap-2.5">
             <p className="text-[11.5px] text-ink-3 m-0">
-              Enter your chess.com username and pick a recent game.
+              {t('review.source.chesscom.instruction')}
             </p>
             <div className="flex gap-1.5">
               <input
@@ -136,7 +138,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void loadGames();
                 }}
-                placeholder="username"
+                placeholder={t('review.source.chesscom.placeholder')}
                 className="flex-1 h-8 px-2.5 rounded-[7px] border border-line-2 bg-wood-dark/60 text-[12.5px] text-ink outline-none focus:border-accent focus:bg-wood-card focus:ring-2 focus:ring-accent-soft transition-all"
                 spellCheck={false}
                 autoComplete="off"
@@ -147,7 +149,9 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
                 disabled={loadingGames || !username.trim()}
                 className="h-8 px-3 rounded-[7px] border border-line-2 bg-wood-card text-ink-2 text-[12px] font-medium hover:bg-wood-hover disabled:opacity-40"
               >
-                {loadingGames ? 'Loading…' : 'Load'}
+                {loadingGames
+                  ? t('review.source.chesscom.loading')
+                  : t('review.source.chesscom.load')}
               </button>
             </div>
 
@@ -157,7 +161,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
 
             {games.length > 0 && (
               <label className="flex flex-col gap-1 text-[11.5px] text-ink-3">
-                Game
+                {t('review.source.chesscom.gameLabel')}
                 <select
                   value={selectedIdx ?? 0}
                   onChange={(e) => setSelectedIdx(parseInt(e.target.value, 10))}
@@ -175,7 +179,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
         ) : (
           <div className="flex flex-col gap-2">
             <p className="text-[11.5px] text-ink-3 m-0">
-              Paste a PGN below.
+              {t('review.source.pgn.instruction')}
             </p>
             <textarea
               value={pgn}
@@ -189,7 +193,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
               onClick={() => setPgn(SAMPLE_PGN)}
               className="self-start text-[11px] text-accent-ink hover:text-accent underline-offset-2 hover:underline"
             >
-              Insert sample PGN
+              {t('review.source.pgn.insertSample')}
             </button>
           </div>
         )}
@@ -197,7 +201,9 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
 
       {/* Depth slider */}
       <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 border-t border-line">
-        <span className="text-[11.5px] text-ink-3 font-medium">Depth</span>
+        <span className="text-[11.5px] text-ink-3 font-medium">
+          {t('review.source.depth')}
+        </span>
         <input
           type="range"
           min={6}
@@ -219,7 +225,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
           className={
             'w-full h-[38px] rounded-[9px] flex items-center justify-center gap-2 text-[13px] font-semibold transition-all ' +
             (canAnalyze
-              ? 'accent-grad text-wood-dark hover:brightness-110'
+              ? 'accent-grad text-[#1d1a14] hover:brightness-110'
               : 'bg-wood-hover text-ink-4 cursor-not-allowed')
           }
           style={{
@@ -229,7 +235,7 @@ export function PgnLoader({ onAnalyze, busy, defaultUsername }: Props) {
           }}
         >
           {busy && <Loader2 size={14} className="animate-spin" />}
-          {busy ? 'Analyzing…' : 'Analyze'}
+          {busy ? t('review.source.analyzing') : t('review.source.analyze')}
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MoveNode, MoveTree, NodeId } from '../types';
 import { fullMainline } from '../utils/tree';
 import { ClassificationIcon } from './ClassificationIcon';
@@ -16,6 +17,7 @@ interface Row {
 }
 
 export function MoveList({ tree, currentNodeId, onSelectNode }: Props) {
+  const { t } = useTranslation();
   const activeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export function MoveList({ tree, currentNodeId, onSelectNode }: Props) {
     <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-1">
       {rows.length === 0 && (
         <div className="text-ink-4 py-6 text-center text-[11.5px]">
-          Moves appear here once analysis starts.
+          {t('review.moves.empty')}
         </div>
       )}
 
@@ -128,6 +130,7 @@ function BranchLine({
   onSelectNode,
   activeRef,
 }: BranchLineProps) {
+  const { t } = useTranslation();
   const nodes: MoveNode[] = [];
   let cur: MoveNode | undefined = tree.nodes[branchRootId];
   while (cur) {
@@ -165,7 +168,7 @@ function BranchLine({
                     ? 'text-ink-3 italic hover:bg-line/40'
                     : 'text-ink-2 hover:bg-line/40 font-medium')
               }
-              title={node.pending ? 'Analyzing…' : undefined}
+              title={node.pending ? t('review.moves.analyzingTooltip') : undefined}
             >
               {!node.pending && (
                 <ClassificationIcon classification={m.classification} size={12} />

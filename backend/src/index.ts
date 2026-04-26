@@ -30,6 +30,69 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, stockfishPath: STOCKFISH_PATH });
 });
 
+// ---- Chess puzzles proxy ----------------------------------------------
+// Forwards GET /api/puzzles/:id to chess-puzzles.p.rapidapi.com, attaching
+// the RapidAPI key server-side so it never reaches the browser. A small
+// in-memory cache (24h TTL, capped at 1000 entries) absorbs repeat hits.
+
+const RAPIDAPI_HOST = 'chess-puzzles.p.rapidapi.com';
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
+const PUZZLE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PUZZLE_CACHE_MAX = 1000;
+const puzzleCache = new Map<string, { data: unknown; expires: number }>();
+
+function prunePuzzleCache(): void {
+  if (puzzleCache.size <= PUZZLE_CACHE_MAX) return;
+  const overflow = puzzleCache.size - PUZZLE_CACHE_MAX;
+  let dropped = 0;
+  for (const k of puzzleCache.keys()) {
+    puzzleCache.delete(k);
+    if (++dropped >= overflow) break;
+  }
+}
+
+app.get('/api/puzzles/:id', async (req, res) => {
+  const id = req.params.id;
+  if (!/^[A-Za-z0-9]{4,8}$/.test(id)) {
+    res.status(400).json({ error: 'Invalid puzzle id format' });
+    return;
+  }
+  if (!RAPIDAPI_KEY) {
+    res.status(503).json({ error: 'RAPIDAPI_KEY not configured on server' });
+    return;
+  }
+
+  const cached = puzzleCache.get(id);
+  if (cached && cached.expires > Date.now()) {
+    res.json(cached.data);
+    return;
+  }
+
+  try {
+    const upstream = await fetch(
+      `https://${RAPIDAPI_HOST}/?id=${encodeURIComponent(id)}`,
+      {
+        headers: {
+          'x-rapidapi-host': RAPIDAPI_HOST,
+          'x-rapidapi-key': RAPIDAPI_KEY,
+        },
+      },
+    );
+    if (!upstream.ok) {
+      res.status(upstream.status).json({
+        error: `Upstream returned ${upstream.status}`,
+      });
+      return;
+    }
+    const data = await upstream.json();
+    puzzleCache.set(id, { data, expires: Date.now() + PUZZLE_CACHE_TTL_MS });
+    prunePuzzleCache();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: (err as Error).message });
+  }
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: ALLOWED_ORIGINS },

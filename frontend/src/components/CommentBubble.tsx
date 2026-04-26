@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import type { MoveAnalysis } from '../types';
 import {
   ClassificationIcon,
-  classificationLabel,
+  useClassificationLabel,
 } from './ClassificationIcon';
 import { formatScore } from '../utils/winProb';
 
@@ -10,35 +11,21 @@ interface Props {
   isInitial?: boolean;
 }
 
-const FLAVOR: Record<string, (m: MoveAnalysis) => string> = {
-  brilliant: () => 'A brilliant find — material on offer but the position justifies it.',
-  great: (m) => `${m.san} was the only move keeping the position together.`,
-  best: (m) => `${m.san} is the engine's top choice.`,
-  good: (m) => `${m.san} is a solid choice; the eval barely budges.`,
-  ok: () => 'Reasonable, but a stronger move was available.',
-  book: () => 'Theory — a known opening continuation.',
-  inaccuracy: (m) => `${m.san} is an inaccuracy. ${pointAtBest(m)}`,
-  mistake: (m) => `${m.san} is a mistake. ${pointAtBest(m)}`,
-  blunder: (m) => `${m.san} is a blunder. ${pointAtBest(m)}`,
-};
-
-function pointAtBest(m: MoveAnalysis): string {
-  if (!m.bestMoveSan) return '';
-  return `Better was ${m.bestMoveSan}.`;
-}
-
 export function CommentBubble({ move, isInitial }: Props) {
+  const { t } = useTranslation();
+  const classificationLabel = useClassificationLabel();
+
   if (isInitial) {
     return (
       <div className="cr-card">
         <div className="cr-card-hd">
-          <div className="cr-card-title">Coach</div>
+          <div className="cr-card-title">{t('review.coach.title')}</div>
         </div>
         <div className="px-4 pb-4 flex gap-3">
           <CoachAvatar />
           <div className="flex-1 min-w-0">
             <p className="text-[12.5px] leading-[1.5] text-ink-2 m-0">
-              Load a PGN to see every move classified, or drag a piece on the board to start a free-play game.
+              {t('review.coach.loadHint')}
             </p>
           </div>
         </div>
@@ -50,13 +37,13 @@ export function CommentBubble({ move, isInitial }: Props) {
     return (
       <div className="cr-card">
         <div className="cr-card-hd">
-          <div className="cr-card-title">Coach</div>
+          <div className="cr-card-title">{t('review.coach.title')}</div>
         </div>
         <div className="px-4 pb-4 flex gap-3">
           <CoachAvatar />
           <div className="flex-1 min-w-0">
             <p className="text-[12.5px] leading-[1.5] text-ink-3 m-0 italic">
-              Pick a move from the list to see commentary.
+              {t('review.coach.pickHint')}
             </p>
           </div>
         </div>
@@ -64,12 +51,12 @@ export function CommentBubble({ move, isInitial }: Props) {
     );
   }
 
-  const flavor = FLAVOR[move.classification]?.(move) ?? '';
+  const flavor = flavorFor(move, t);
 
   return (
     <div className="cr-card">
       <div className="cr-card-hd">
-        <div className="cr-card-title">Coach</div>
+        <div className="cr-card-title">{t('review.coach.title')}</div>
         <span className="cr-pill cr-pill-mono">
           {formatScore(move.evalAfterWhite)}
         </span>
@@ -80,7 +67,10 @@ export function CommentBubble({ move, isInitial }: Props) {
           <div className="font-mono text-[12px] text-ink-3 mb-1 flex items-center gap-1.5">
             <ClassificationIcon classification={move.classification} size={14} />
             <strong className="text-ink font-semibold">{move.san}</strong>
-            <span>· {classificationLabel(move.classification)}</span>
+            <span>
+              {t('review.coach.labelSeparator')}
+              {classificationLabel(move.classification)}
+            </span>
           </div>
           {flavor && (
             <p className="m-0 text-[12.5px] leading-[1.5] text-ink-2 [text-wrap:pretty]">
@@ -91,6 +81,43 @@ export function CommentBubble({ move, isInitial }: Props) {
       </div>
     </div>
   );
+}
+
+function flavorFor(
+  m: MoveAnalysis,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  switch (m.classification) {
+    case 'brilliant':
+      return t('review.flavor.brilliant');
+    case 'great':
+      return t('review.flavor.great', { san: m.san });
+    case 'best':
+      return t('review.flavor.best', { san: m.san });
+    case 'good':
+      return t('review.flavor.good', { san: m.san });
+    case 'ok':
+      return t('review.flavor.ok');
+    case 'book':
+      return t('review.flavor.book');
+    case 'inaccuracy':
+      return appendBetter(t('review.flavor.inaccuracy', { san: m.san }), m, t);
+    case 'mistake':
+      return appendBetter(t('review.flavor.mistake', { san: m.san }), m, t);
+    case 'blunder':
+      return appendBetter(t('review.flavor.blunder', { san: m.san }), m, t);
+    default:
+      return '';
+  }
+}
+
+function appendBetter(
+  prefix: string,
+  m: MoveAnalysis,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (!m.bestMoveSan) return prefix;
+  return `${prefix} ${t('review.flavor.betterWas', { san: m.bestMoveSan })}`;
 }
 
 function CoachAvatar() {

@@ -1,0 +1,256 @@
+{
+  "themes": [
+    {
+      "name": "short",
+      "count": 901923
+    },
+    {
+      "name": "middlegame",
+      "count": 810846
+    },
+    {
+      "name": "endgame",
+      "count": 799305
+    },
+    {
+      "name": "crushing",
+      "count": 747810
+    },
+    {
+      "name": "advantage",
+      "count": 557209
+    },
+    {
+      "name": "long",
+      "count": 543591
+    },
+    {
+      "name": "mate",
+      "count": 396867
+    },
+    {
+      "name": "fork",
+      "count": 251826
+    },
+    {
+      "name": "master",
+      "count": 248543
+    },
+    {
+      "name": "mateIn2",
+      "count": 201913
+    },
+    {
+      "name": "sacrifice",
+      "count": 167293
+    },
+    {
+      "name": "veryLong",
+      "count": 153666
+    },
+    {
+      "name": "pin",
+      "count": 131736
+    },
+    {
+      "name": "kingsideAttack",
+      "count": 130764
+    },
+    {
+      "name": "advancedPawn",
+      "count": 118369
+    },
+    {
+      "name": "discoveredAttack",
+      "count": 111661
+    },
+    {
+      "name": "oneMove",
+      "count": 102706
+    },
+    {
+      "name": "mateIn1",
+      "count": 102447
+    },
+    {
+      "name": "defensiveMove",
+      "count": 98661
+    },
+    {
+      "name": "opening",
+      "count": 98644
+    },
+    {
+      "name": "deflection",
+      "count": 94728
+    },
+    {
+      "name": "attraction",
+      "count": 92668
+    },
+    {
+      "name": "rookEndgame",
+      "count": 84205
+    },
+    {
+      "name": "mateIn3",
+      "count": 73757
+    },
+    {
+      "name": "quietMove",
+      "count": 66107
+    },
+    {
+      "name": "exposedKing",
+      "count": 64569
+    },
+    {
+      "name": "pawnEndgame",
+      "count": 61014
+    },
+    {
+      "name": "hangingPiece",
+      "count": 57377
+    },
+    {
+      "name": "promotion",
+      "count": 44497
+    },
+    {
+      "name": "discoveredCheck",
+      "count": 44047
+    },
+    {
+      "name": "skewer",
+      "count": 42022
+    },
+    {
+      "name": "trappedPiece",
+      "count": 29793
+    },
+    {
+      "name": "intermezzo",
+      "count": 27634
+    },
+    {
+      "name": "clearance",
+      "count": 27444
+    },
+    {
+      "name": "masterVsMaster",
+      "count": 26820
+    },
+    {
+      "name": "backRankMate",
+      "count": 26311
+    },
+    {
+      "name": "queensideAttack",
+      "count": 24838
+    },
+    {
+      "name": "bishopEndgame",
+      "count": 23475
+    },
+    {
+      "name": "queenEndgame",
+      "count": 19194
+    },
+    {
+      "name": "capturingDefender",
+      "count": 18397
+    },
+    {
+      "name": "zugzwang",
+      "count": 17766
+    },
+    {
+      "name": "mateIn4",
+      "count": 14993
+    },
+    {
+      "name": "knightEndgame",
+      "count": 14162
+    },
+    {
+      "name": "operaMate",
+      "count": 13937
+    },
+    {
+      "name": "pillsburysMate",
+      "count": 13762
+    },
+    {
+      "name": "doubleCheck",
+      "count": 13012
+    },
+    {
+      "name": "attackingF2F7",
+      "count": 10562
+    },
+    {
+      "name": "queenRookEndgame",
+      "count": 10026
+    },
+    {
+      "name": "interference",
+      "count": 8572
+    },
+    {
+      "name": "xRayAttack",
+      "count": 8271
+    },
+    {
+      "name": "epauletteMate",
+      "count": 5855
+    },
+    {
+      "name": "smotheredMate",
+      "count": 5026
+    },
+    {
+      "name": "mateIn5",
+      "count": 3757
+    },
+    {
+      "name": "cornerMate",
+      "count": 3428
+    },
+    {
+      "name": "hookMate",
+      "count": 3275
+    },
+    {
+      "name": "anastasiaMate",
+      "count": 3053
+    },
+    {
+      "name": "triangleMate",
+      "count": 3032
+    },
+    {
+      "name": "enPassant",
+      "count": 2654
+    },
+    {
+      "name": "arabianMate",
+      "count": 2596
+    },
+    {
+      "name": "collinearMove",
+      "count": 2506
+    }
+  ],
+  "tierCounts": {
+    "beginner": 125204,
+    "easy": 482974,
+    "medium": 600359,
+    "hard": 354922,
+    "expert": 145336
+  },
+  "totals": {
+    "rowsScanned": 5882680,
+    "qualityKept": 1708795
+  },
+  "builtAt": "2026-04-25T20:54:18.015Z"
+}

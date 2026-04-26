@@ -1,0 +1,372 @@
+{
+  "header": {
+    "brand": {
+      "title": "Chess Review",
+      "subtitle": "Stockfish-powered analysis",
+      "logoAlt": "Chess Puzzle logo"
+    },
+    "nav": {
+      "review": "Review",
+      "puzzles": "Puzzles",
+      "newGame": "New game"
+    },
+    "actions": {
+      "flipBoard": "Flip board",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "settings": "Settings"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Saved on this device",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "mode": {
+      "title": "Mode",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "title": "Language",
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "theme": {
+      "title": "Theme",
+      "wood": {
+        "label": "Wood",
+        "description": "Warm brown with amber accents"
+      },
+      "purple": {
+        "label": "Midnight",
+        "description": "Deep violet with lavender accents"
+      },
+      "ocean": {
+        "label": "Glass",
+        "description": "Cool slate-blue with cyan accents"
+      },
+      "lagoon": {
+        "label": "Lagoon",
+        "description": "Deep teal with mint accents"
+      }
+    },
+    "chessCom": {
+      "title": "Default chess.com user",
+      "placeholder": "username (leave empty for none)",
+      "hint": "When set, the home screen pre-fills this username and loads the recent games automatically."
+    }
+  },
+  "loading": {
+    "puzzles": "Loading puzzles…",
+    "puzzle": "Loading puzzle…"
+  },
+  "review": {
+    "source": {
+      "title": "Source",
+      "tabs": {
+        "chesscom": "chess.com",
+        "pgn": "Paste PGN"
+      },
+      "chesscom": {
+        "instruction": "Enter your chess.com username and pick a recent game.",
+        "placeholder": "username",
+        "loading": "Loading…",
+        "load": "Load",
+        "noGames": "No standard-chess games found for \"{{username}}\".",
+        "userNotFound": "Chess.com user \"{{username}}\" not found.",
+        "loadFailed": "Failed to load games from chess.com.",
+        "gameLabel": "Game"
+      },
+      "pgn": {
+        "instruction": "Paste a PGN below.",
+        "insertSample": "Insert sample PGN"
+      },
+      "depth": "Depth",
+      "analyze": "Analyze",
+      "analyzing": "Analyzing…"
+    },
+    "analyzing": {
+      "title": "Analyzing",
+      "description": "Stockfish is reviewing every move. Each ply takes a moment.",
+      "cancel": "Cancel"
+    },
+    "accuracy": {
+      "title": "Accuracy",
+      "white": "White",
+      "black": "Black"
+    },
+    "moves": {
+      "title": "Moves",
+      "plies": "{{count}} plies",
+      "empty": "Moves appear here once analysis starts.",
+      "analyzingTooltip": "Analyzing…"
+    },
+    "controls": {
+      "start": "Start",
+      "previous": "Previous",
+      "playPause": "Play/Pause",
+      "next": "Next",
+      "end": "End",
+      "showBest": "Show best move"
+    },
+    "evalChart": {
+      "title": "Eval over time"
+    },
+    "coach": {
+      "title": "Coach",
+      "loadHint": "Load a PGN to see every move classified, or drag a piece on the board to start a free-play game.",
+      "pickHint": "Pick a move from the list to see commentary.",
+      "labelSeparator": " · "
+    },
+    "flavor": {
+      "brilliant": "A brilliant find — material on offer but the position justifies it.",
+      "great": "{{san}} was the only move keeping the position together.",
+      "best": "{{san}} is the engine's top choice.",
+      "good": "{{san}} is a solid choice; the eval barely budges.",
+      "ok": "Reasonable, but a stronger move was available.",
+      "book": "Theory — a known opening continuation.",
+      "inaccuracy": "{{san}} is an inaccuracy.",
+      "mistake": "{{san}} is a mistake.",
+      "blunder": "{{san}} is a blunder.",
+      "betterWas": "Better was {{san}}."
+    },
+    "gameMeta": {
+      "title": "Game",
+      "empty": "No game loaded yet.",
+      "emptyHint": "Drag pieces to play freely, or load a PGN / chess.com game from the right.",
+      "vs": "vs",
+      "vsConnector": "vs",
+      "loaded": "Loaded",
+      "plies": "{{count}} plies"
+    },
+    "color": {
+      "white": "White",
+      "black": "Black"
+    },
+    "errors": {
+      "title": "Analysis failed"
+    },
+    "actions": {
+      "clear": "Clear"
+    }
+  },
+  "classification": {
+    "brilliant": "Brilliant",
+    "great": "Great move",
+    "best": "Best move",
+    "good": "Good move",
+    "ok": "OK move",
+    "book": "Book move",
+    "inaccuracy": "Inaccuracy",
+    "mistake": "Mistake",
+    "blunder": "Blunder"
+  },
+  "puzzles": {
+    "hub": {
+      "daily": {
+        "eyebrow": "Daily puzzle · {{date}}",
+        "start": "Start daily",
+        "viewCalendar": "Daily calendar",
+        "solvers": "{{value}} solvers",
+        "title": {
+          "mateIn1": "Find mate in one.",
+          "mateIn2": "Force mate in two.",
+          "mateIn3": "A three-move mating sequence.",
+          "mateIn4": "A four-move mating sequence.",
+          "sacrifice": "A sacrifice unlocks the position.",
+          "discoveredAttack": "A discovered attack lurks.",
+          "fork": "Find the winning fork.",
+          "pin": "Use a pin to win material.",
+          "skewer": "A skewer wins material.",
+          "zugzwang": "Reduce them to zugzwang.",
+          "endgame": "A precise endgame technique wins.",
+          "default": "A quiet position with a hidden blow."
+        }
+      },
+      "filters": {
+        "title": "Find a puzzle",
+        "difficulties": "Difficulties",
+        "themes": "Themes",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all",
+        "start": "Start puzzles",
+        "empty": "No puzzles match this combination."
+      },
+      "themes": {
+        "title": "Themes",
+        "empty": "No skill themes at this difficulty.",
+        "puzzleCount": "{{value}} puzzles · {{tier}}"
+      },
+      "difficulty": {
+        "all": "All",
+        "beginner": "Beginner",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "expert": "Expert"
+      },
+      "progress": {
+        "title": "Your progress",
+        "rating": "Puzzle rating",
+        "streak": "Streak",
+        "today": "Today",
+        "accuracy": "Accuracy"
+      },
+      "activity": {
+        "title": "7-day activity",
+        "solved": "{{count}} solved",
+        "tooltip": "{{count}} on {{date}}"
+      },
+      "weakness": {
+        "title": "Train these",
+        "empty": "Solve a few puzzles to see which themes need the most work.",
+        "tooltip": "{{fails}} failed of {{attempts}}"
+      },
+      "days": {
+        "mon": "M",
+        "tue": "T",
+        "wed": "W",
+        "thu": "T",
+        "fri": "F",
+        "sat": "S",
+        "sun": "S"
+      }
+    },
+    "solver": {
+      "back": "Back to hub",
+      "rating": "Rating {{elo}}",
+      "solved": "solved",
+      "rail": {
+        "hint": "Hint",
+        "hintTitle": "Hint (3 escalating levels — forfeits ELO gain)",
+        "reveal": "Reveal",
+        "revealTitle": "Reveal solution (counts as fail)",
+        "next": "Next",
+        "nextTitle": "Next puzzle"
+      },
+      "info": {
+        "title": "Puzzle"
+      },
+      "prompt": {
+        "yourMoveWhite": "Your move — find the best continuation as white.",
+        "yourMoveBlack": "Your move — find the best continuation as black.",
+        "opponentMoving": "Opponent is moving…",
+        "complete": "Puzzle complete.",
+        "loading": "Loading puzzle…"
+      },
+      "hint": {
+        "label": "Hint",
+        "level1": "Move the piece on {{square}}.",
+        "level2": "Move the piece from {{from}} toward {{to}}.",
+        "level3": "Play {{move}}."
+      },
+      "feedback": {
+        "correct": "Correct",
+        "wrong": "Wrong move",
+        "solution": "Solution",
+        "solved": "Solved!"
+      },
+      "result": {
+        "solved": "Solved!",
+        "solvedWithHints": "Solved with hints",
+        "revealed": "Solution revealed",
+        "failedWithHints": "Failed (with hints)",
+        "wrong": "Wrong move",
+        "solutionLabel": "Solution",
+        "explainSolveClean": "Clean solve. Rating updated.",
+        "explainSolveHinted": "You found it after a hint — full ELO gain forfeited, but a smaller penalty was applied.",
+        "explainReveal": "Solution shown. Counted as a fail with full loss.",
+        "explainWrong": "Wrong move. Try the next puzzle to recover rating.",
+        "punisherPending": "Computing the engine's response so you can see what it would have played…",
+        "retry": "Retry",
+        "next": "Next puzzle"
+      },
+      "errors": {
+        "title": "Couldn't load puzzle",
+        "notFound": "Puzzle not found.",
+        "loadFailed": "Failed to load puzzle."
+      }
+    },
+    "calendar": {
+      "title": "Daily puzzle calendar",
+      "today": "Today",
+      "close": "Close",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "empty": "Solve a daily puzzle to start filling the calendar.",
+      "weekday": {
+        "mon": "Mo",
+        "tue": "Tu",
+        "wed": "We",
+        "thu": "Th",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "Su"
+      }
+    },
+    "themeNames": {
+      "advancedPawn": "Advanced Pawn",
+      "advantage": "Advantage",
+      "anastasiaMate": "Anastasia Mate",
+      "arabianMate": "Arabian Mate",
+      "attackingF2F7": "Attacking f2/f7",
+      "attraction": "Attraction",
+      "backRankMate": "Back Rank Mate",
+      "bishopEndgame": "Bishop Endgame",
+      "bodenMate": "Boden Mate",
+      "capturingDefender": "Capturing Defender",
+      "castling": "Castling",
+      "clearance": "Clearance",
+      "crushing": "Crushing",
+      "defensiveMove": "Defensive Move",
+      "deflection": "Deflection",
+      "discoveredAttack": "Discovered Attack",
+      "doubleBishopMate": "Double Bishop Mate",
+      "doubleCheck": "Double Check",
+      "dovetailMate": "Dovetail Mate",
+      "endgame": "Endgame",
+      "enPassant": "En Passant",
+      "equality": "Equality",
+      "exposedKing": "Exposed King",
+      "fork": "Fork",
+      "hangingPiece": "Hanging Piece",
+      "hookMate": "Hook Mate",
+      "interference": "Interference",
+      "intermezzo": "Intermezzo",
+      "kingsideAttack": "Kingside Attack",
+      "knightEndgame": "Knight Endgame",
+      "long": "Long",
+      "master": "Master",
+      "masterVsMaster": "Master vs Master",
+      "mate": "Mate",
+      "mateIn1": "Mate In 1",
+      "mateIn2": "Mate In 2",
+      "mateIn3": "Mate In 3",
+      "mateIn4": "Mate In 4",
+      "mateIn5": "Mate In 5",
+      "middlegame": "Middlegame",
+      "oneMove": "One Move",
+      "opening": "Opening",
+      "pawnEndgame": "Pawn Endgame",
+      "pin": "Pin",
+      "promotion": "Promotion",
+      "queenEndgame": "Queen Endgame",
+      "queenRookEndgame": "Queen Rook Endgame",
+      "queensideAttack": "Queenside Attack",
+      "quietMove": "Quiet Move",
+      "rookEndgame": "Rook Endgame",
+      "sacrifice": "Sacrifice",
+      "short": "Short",
+      "skewer": "Skewer",
+      "smotheredMate": "Smothered Mate",
+      "superGM": "Super GM",
+      "trappedPiece": "Trapped Piece",
+      "underPromotion": "Under Promotion",
+      "veryLong": "Very Long",
+      "xRayAttack": "X-Ray Attack",
+      "zugzwang": "Zugzwang"
+    }
+  }
+}

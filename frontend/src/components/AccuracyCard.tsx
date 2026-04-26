@@ -1,23 +1,26 @@
+import { useTranslation } from 'react-i18next';
+
 interface Props {
   whiteAccuracy: number | null;
   blackAccuracy: number | null;
 }
 
 export function AccuracyCard({ whiteAccuracy, blackAccuracy }: Props) {
+  const { t } = useTranslation();
   if (whiteAccuracy === null && blackAccuracy === null) return null;
   return (
     <div className="cr-card pb-3">
       <div className="cr-card-hd">
-        <div className="cr-card-title">Accuracy</div>
+        <div className="cr-card-title">{t('review.accuracy.title')}</div>
       </div>
       <div className="grid grid-cols-2 gap-2.5 px-4">
         <AccBar
-          label="White"
+          label={t('review.accuracy.white')}
           score={whiteAccuracy ?? 0}
           tone="light"
         />
         <AccBar
-          label="Black"
+          label={t('review.accuracy.black')}
           score={blackAccuracy ?? 0}
           tone="dark"
         />

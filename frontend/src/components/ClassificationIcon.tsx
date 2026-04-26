@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import type { MoveClassification } from '../types';
 
 interface Props {
@@ -30,20 +32,22 @@ const GLYPH: Record<MoveClassification, string> = {
   blunder: '??',
 };
 
-const LABEL: Record<MoveClassification, string> = {
-  brilliant: 'Brilliant',
-  great: 'Great move',
-  best: 'Best move',
-  good: 'Good move',
-  ok: 'OK move',
-  book: 'Book move',
-  inaccuracy: 'Inaccuracy',
-  mistake: 'Mistake',
-  blunder: 'Blunder',
-};
+/**
+ * Hook form: returns a function that resolves a classification to its
+ * localized label, reactive to language changes.
+ */
+export function useClassificationLabel(): (c: MoveClassification) => string {
+  const { t } = useTranslation();
+  return (c) => t(`classification.${c}`);
+}
 
+/**
+ * Non-hook form for code outside React (or where hooks aren't convenient).
+ * Reads the active i18n instance synchronously — fine for one-off strings,
+ * not reactive to language changes.
+ */
 export function classificationLabel(c: MoveClassification): string {
-  return LABEL[c];
+  return i18n.t(`classification.${c}`);
 }
 
 export function classificationColor(c: MoveClassification): string {
@@ -55,6 +59,7 @@ export function classificationGlyph(c: MoveClassification): string {
 }
 
 export function ClassificationIcon({ classification, size = 22, className }: Props) {
+  const { t } = useTranslation();
   const color = COLORS[classification];
   const glyph = GLYPH[classification];
 
@@ -75,7 +80,7 @@ export function ClassificationIcon({ classification, size = 22, className }: Pro
         fontWeight: 800,
         lineHeight: 1,
       }}
-      title={LABEL[classification]}
+      title={t(`classification.${classification}`)}
     >
       {isEmoji ? '♟' : glyph}
     </span>

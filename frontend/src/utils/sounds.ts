@@ -2,7 +2,7 @@
 // Each function builds a tiny graph (oscillators / noise → filter → gain → out)
 // with a short envelope.  The sounds are intentionally subtle.
 
-export type SoundKind = 'move' | 'capture' | 'check' | 'checkmate' | 'castle';
+export type SoundKind = 'move' | 'capture' | 'check' | 'checkmate' | 'castle' | 'error';
 
 const MUTE_KEY = 'chess-engine-muted';
 
@@ -95,6 +95,25 @@ function click(c: AudioContext, t0: number, gain = 0.55) {
   thunk(c, t0, 0.25);
 }
 
+function buzz(c: AudioContext, t0: number) {
+  // Two descending dissonant tones — short and unmistakable.
+  const make = (freq: number, dt: number, peak: number, decay: number) => {
+    const o = c.createOscillator();
+    o.type = 'square';
+    o.frequency.value = freq;
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1200;
+    const g = c.createGain();
+    envelope(g, t0 + dt, 0.005, decay, peak);
+    o.connect(lp).connect(g).connect(c.destination);
+    o.start(t0 + dt);
+    o.stop(t0 + dt + decay + 0.05);
+  };
+  make(220, 0, 0.18, 0.12);
+  make(165, 0.09, 0.18, 0.18);
+}
+
 export function play(kind: SoundKind): void {
   if (muted) return;
   const c = getCtx();
@@ -121,6 +140,9 @@ export function play(kind: SoundKind): void {
       case 'castle':
         thunk(c, t0);
         thunk(c, t0 + 0.09);
+        break;
+      case 'error':
+        buzz(c, t0);
         break;
     }
   } catch {

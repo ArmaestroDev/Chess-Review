@@ -3,6 +3,7 @@ dist
 build
 .env
 .env.local
+.mcp.json
 *.log
 .DS_Store
 .vscode
@@ -17,3 +18,10 @@ frontend/vite.config.d.ts
 
 # Firebase CLI cache
 .firebase/
+
+# build-time download cache (Lichess puzzle DB, etc.)
+.cache/
+
+# local-only design mockup and per-workspace Claude settings
+ChessReview.html
+.claude/

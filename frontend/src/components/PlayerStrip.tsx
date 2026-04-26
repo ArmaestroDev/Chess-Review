@@ -3,10 +3,9 @@ interface Props {
   name: string;
   rating: string | null;
   active?: boolean;
-  accuracy?: number | null;
 }
 
-export function PlayerStrip({ color, name, rating, active, accuracy }: Props) {
+export function PlayerStrip({ color, name, rating, active }: Props) {
   return (
     <div
       className={
@@ -37,14 +36,6 @@ export function PlayerStrip({ color, name, rating, active, accuracy }: Props) {
               </span>
             )}
           </div>
-          {accuracy !== undefined && accuracy !== null && (
-            <div className="text-[11px] text-ink-3">
-              Accuracy{' '}
-              <span className="font-mono text-ink-2 font-medium">
-                {accuracy.toFixed(1)}%
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </div>

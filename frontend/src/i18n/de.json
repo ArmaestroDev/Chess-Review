@@ -1,0 +1,372 @@
+{
+  "header": {
+    "brand": {
+      "title": "Schachanalyse",
+      "subtitle": "Analyse mit Stockfish",
+      "logoAlt": "Schachpuzzle-Logo"
+    },
+    "nav": {
+      "review": "Analyse",
+      "puzzles": "Aufgaben",
+      "newGame": "Neue Partie"
+    },
+    "actions": {
+      "flipBoard": "Brett drehen",
+      "mute": "Stummschalten",
+      "unmute": "Ton an",
+      "settings": "Einstellungen"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Auf diesem Gerät gespeichert",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "mode": {
+      "title": "Modus",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "language": {
+      "title": "Sprache",
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "theme": {
+      "title": "Design",
+      "wood": {
+        "label": "Holz",
+        "description": "Warmes Braun mit Bernsteinakzenten"
+      },
+      "purple": {
+        "label": "Mitternacht",
+        "description": "Tiefes Violett mit Lavendelakzenten"
+      },
+      "ocean": {
+        "label": "Glas",
+        "description": "Kühles Schieferblau mit Cyanakzenten"
+      },
+      "lagoon": {
+        "label": "Lagune",
+        "description": "Tiefes Türkis mit Minzakzenten"
+      }
+    },
+    "chessCom": {
+      "title": "Standard-chess.com-Nutzer",
+      "placeholder": "Benutzername (leer lassen für keinen)",
+      "hint": "Wenn gesetzt, füllt die Startseite diesen Benutzernamen automatisch aus und lädt die letzten Partien."
+    }
+  },
+  "loading": {
+    "puzzles": "Lade Aufgaben…",
+    "puzzle": "Lade Aufgabe…"
+  },
+  "review": {
+    "source": {
+      "title": "Quelle",
+      "tabs": {
+        "chesscom": "chess.com",
+        "pgn": "PGN einfügen"
+      },
+      "chesscom": {
+        "instruction": "Gib deinen chess.com-Benutzernamen ein und wähle eine kürzliche Partie.",
+        "placeholder": "Benutzername",
+        "loading": "Lädt…",
+        "load": "Laden",
+        "noGames": "Keine Standard-Schachpartien für \"{{username}}\" gefunden.",
+        "userNotFound": "Chess.com-Benutzer \"{{username}}\" nicht gefunden.",
+        "loadFailed": "Partien konnten nicht von chess.com geladen werden.",
+        "gameLabel": "Partie"
+      },
+      "pgn": {
+        "instruction": "Füge unten eine PGN ein.",
+        "insertSample": "Beispiel-PGN einfügen"
+      },
+      "depth": "Tiefe",
+      "analyze": "Analysieren",
+      "analyzing": "Analysiere…"
+    },
+    "analyzing": {
+      "title": "Analysiere",
+      "description": "Stockfish überprüft jeden Zug. Jeder Halbzug dauert einen Moment.",
+      "cancel": "Abbrechen"
+    },
+    "accuracy": {
+      "title": "Genauigkeit",
+      "white": "Weiß",
+      "black": "Schwarz"
+    },
+    "moves": {
+      "title": "Züge",
+      "plies": "{{count}} Halbzüge",
+      "empty": "Züge erscheinen hier, sobald die Analyse beginnt.",
+      "analyzingTooltip": "Analysiere…"
+    },
+    "controls": {
+      "start": "Anfang",
+      "previous": "Zurück",
+      "playPause": "Wiedergabe/Pause",
+      "next": "Weiter",
+      "end": "Ende",
+      "showBest": "Besten Zug zeigen"
+    },
+    "evalChart": {
+      "title": "Stellungsbewertung im Verlauf"
+    },
+    "coach": {
+      "title": "Coach",
+      "loadHint": "Lade eine PGN, um jeden Zug klassifiziert zu sehen, oder ziehe eine Figur, um eine freie Partie zu beginnen.",
+      "pickHint": "Wähle einen Zug aus der Liste, um Kommentare zu sehen.",
+      "labelSeparator": " · "
+    },
+    "flavor": {
+      "brilliant": "Ein brillanter Fund — Material steht im Feuer, aber die Stellung rechtfertigt es.",
+      "great": "{{san}} war der einzige Zug, der die Stellung zusammenhielt.",
+      "best": "{{san}} ist die beste Wahl der Engine.",
+      "good": "{{san}} ist solide; die Bewertung ändert sich kaum.",
+      "ok": "Vernünftig, aber es gab einen stärkeren Zug.",
+      "book": "Theorie — eine bekannte Eröffnungsfortsetzung.",
+      "inaccuracy": "{{san}} ist ungenau.",
+      "mistake": "{{san}} ist ein Fehler.",
+      "blunder": "{{san}} ist ein Patzer.",
+      "betterWas": "Besser war {{san}}."
+    },
+    "gameMeta": {
+      "title": "Partie",
+      "empty": "Noch keine Partie geladen.",
+      "emptyHint": "Ziehe Figuren, um frei zu spielen, oder lade rechts eine PGN- bzw. chess.com-Partie.",
+      "vs": "gegen",
+      "vsConnector": "vs",
+      "loaded": "Geladen",
+      "plies": "{{count}} Halbzüge"
+    },
+    "color": {
+      "white": "Weiß",
+      "black": "Schwarz"
+    },
+    "errors": {
+      "title": "Analyse fehlgeschlagen"
+    },
+    "actions": {
+      "clear": "Zurücksetzen"
+    }
+  },
+  "classification": {
+    "brilliant": "Brillant",
+    "great": "Großartiger Zug",
+    "best": "Bester Zug",
+    "good": "Guter Zug",
+    "ok": "OK-Zug",
+    "book": "Buchzug",
+    "inaccuracy": "Ungenauigkeit",
+    "mistake": "Fehler",
+    "blunder": "Patzer"
+  },
+  "puzzles": {
+    "hub": {
+      "daily": {
+        "eyebrow": "Tagesaufgabe · {{date}}",
+        "start": "Tagesaufgabe starten",
+        "viewCalendar": "Tageskalender",
+        "solvers": "{{value}} Löser",
+        "title": {
+          "mateIn1": "Finde Matt in eins.",
+          "mateIn2": "Erzwinge Matt in zwei.",
+          "mateIn3": "Eine Mattsequenz in drei Zügen.",
+          "mateIn4": "Eine Mattsequenz in vier Zügen.",
+          "sacrifice": "Ein Opfer öffnet die Stellung.",
+          "discoveredAttack": "Ein Abzugsangriff lauert.",
+          "fork": "Finde die gewinnende Gabel.",
+          "pin": "Nutze eine Fesselung, um Material zu gewinnen.",
+          "skewer": "Ein Spieß gewinnt Material.",
+          "zugzwang": "Reduziere sie auf Zugzwang.",
+          "endgame": "Eine präzise Endspieltechnik gewinnt.",
+          "default": "Eine ruhige Stellung mit einem versteckten Schlag."
+        }
+      },
+      "filters": {
+        "title": "Rätsel finden",
+        "difficulties": "Schwierigkeit",
+        "themes": "Themen",
+        "selectAll": "Alle auswählen",
+        "deselectAll": "Alle abwählen",
+        "start": "Rätsel starten",
+        "empty": "Keine Aufgabe passt zu dieser Auswahl."
+      },
+      "themes": {
+        "title": "Themen",
+        "empty": "Keine Themen für diese Schwierigkeit.",
+        "puzzleCount": "{{value}} Aufgaben · {{tier}}"
+      },
+      "difficulty": {
+        "all": "Alle",
+        "beginner": "Anfänger",
+        "easy": "Leicht",
+        "medium": "Mittel",
+        "hard": "Schwer",
+        "expert": "Experte"
+      },
+      "progress": {
+        "title": "Dein Fortschritt",
+        "rating": "Aufgaben-Wertung",
+        "streak": "Serie",
+        "today": "Heute",
+        "accuracy": "Genauigkeit"
+      },
+      "activity": {
+        "title": "Aktivität (7 Tage)",
+        "solved": "{{count}} gelöst",
+        "tooltip": "{{count}} am {{date}}"
+      },
+      "weakness": {
+        "title": "Diese trainieren",
+        "empty": "Löse ein paar Aufgaben, um zu sehen, welche Themen am meisten Übung brauchen.",
+        "tooltip": "{{fails}} von {{attempts}} verloren"
+      },
+      "days": {
+        "mon": "M",
+        "tue": "D",
+        "wed": "M",
+        "thu": "D",
+        "fri": "F",
+        "sat": "S",
+        "sun": "S"
+      }
+    },
+    "solver": {
+      "back": "Zur Übersicht",
+      "rating": "Wertung {{elo}}",
+      "solved": "gelöst",
+      "rail": {
+        "hint": "Tipp",
+        "hintTitle": "Tipp (3 Stufen — verzichtet auf ELO-Gewinn)",
+        "reveal": "Auflösen",
+        "revealTitle": "Lösung zeigen (zählt als Niederlage)",
+        "next": "Weiter",
+        "nextTitle": "Nächste Aufgabe"
+      },
+      "info": {
+        "title": "Aufgabe"
+      },
+      "prompt": {
+        "yourMoveWhite": "Du bist am Zug — finde die beste Fortsetzung mit Weiß.",
+        "yourMoveBlack": "Du bist am Zug — finde die beste Fortsetzung mit Schwarz.",
+        "opponentMoving": "Gegner zieht…",
+        "complete": "Aufgabe abgeschlossen.",
+        "loading": "Lade Aufgabe…"
+      },
+      "hint": {
+        "label": "Tipp",
+        "level1": "Bewege die Figur auf {{square}}.",
+        "level2": "Bewege die Figur von {{from}} in Richtung {{to}}.",
+        "level3": "Spiele {{move}}."
+      },
+      "feedback": {
+        "correct": "Richtig",
+        "wrong": "Falscher Zug",
+        "solution": "Lösung",
+        "solved": "Gelöst!"
+      },
+      "result": {
+        "solved": "Gelöst!",
+        "solvedWithHints": "Mit Tipps gelöst",
+        "revealed": "Lösung aufgedeckt",
+        "failedWithHints": "Verloren (mit Tipps)",
+        "wrong": "Falscher Zug",
+        "solutionLabel": "Lösung",
+        "explainSolveClean": "Saubere Lösung. Wertung aktualisiert.",
+        "explainSolveHinted": "Du hast es nach einem Tipp gefunden — voller ELO-Gewinn entfällt, dafür wurde eine kleinere Strafe angewendet.",
+        "explainReveal": "Lösung gezeigt. Zählt als Niederlage mit vollem Verlust.",
+        "explainWrong": "Falscher Zug. Versuche die nächste Aufgabe, um die Wertung zurückzugewinnen.",
+        "punisherPending": "Berechne die Antwort der Engine, damit du siehst, was sie gespielt hätte…",
+        "retry": "Erneut",
+        "next": "Nächste Aufgabe"
+      },
+      "errors": {
+        "title": "Aufgabe konnte nicht geladen werden",
+        "notFound": "Aufgabe nicht gefunden.",
+        "loadFailed": "Aufgabe konnte nicht geladen werden."
+      }
+    },
+    "calendar": {
+      "title": "Kalender der Tagesaufgaben",
+      "today": "Heute",
+      "close": "Schließen",
+      "prevMonth": "Vorheriger Monat",
+      "nextMonth": "Nächster Monat",
+      "empty": "Löse eine Tagesaufgabe, um den Kalender zu füllen.",
+      "weekday": {
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      }
+    },
+    "themeNames": {
+      "advancedPawn": "Vorgerückter Bauer",
+      "advantage": "Vorteil",
+      "anastasiaMate": "Anastasia-Matt",
+      "arabianMate": "Arabisches Matt",
+      "attackingF2F7": "Angriff auf f2/f7",
+      "attraction": "Hinlenkung",
+      "backRankMate": "Grundreihenmatt",
+      "bishopEndgame": "Läufer-Endspiel",
+      "bodenMate": "Boden-Matt",
+      "capturingDefender": "Verteidiger schlagen",
+      "castling": "Rochade",
+      "clearance": "Räumung",
+      "crushing": "Vernichtend",
+      "defensiveMove": "Verteidigungszug",
+      "deflection": "Ablenkung",
+      "discoveredAttack": "Abzugsangriff",
+      "doubleBishopMate": "Doppelläufer-Matt",
+      "doubleCheck": "Doppelschach",
+      "dovetailMate": "Schwalbenschwanz-Matt",
+      "endgame": "Endspiel",
+      "enPassant": "En passant",
+      "equality": "Ausgleich",
+      "exposedKing": "Offener König",
+      "fork": "Gabel",
+      "hangingPiece": "Ungedeckte Figur",
+      "hookMate": "Haken-Matt",
+      "interference": "Verstellung",
+      "intermezzo": "Zwischenzug",
+      "kingsideAttack": "Königsflügel-Angriff",
+      "knightEndgame": "Springer-Endspiel",
+      "long": "Lang",
+      "master": "Meister",
+      "masterVsMaster": "Meister gegen Meister",
+      "mate": "Matt",
+      "mateIn1": "Matt in 1",
+      "mateIn2": "Matt in 2",
+      "mateIn3": "Matt in 3",
+      "mateIn4": "Matt in 4",
+      "mateIn5": "Matt in 5",
+      "middlegame": "Mittelspiel",
+      "oneMove": "Ein Zug",
+      "opening": "Eröffnung",
+      "pawnEndgame": "Bauernendspiel",
+      "pin": "Fesselung",
+      "promotion": "Umwandlung",
+      "queenEndgame": "Damen-Endspiel",
+      "queenRookEndgame": "Damen-Turm-Endspiel",
+      "queensideAttack": "Damenflügel-Angriff",
+      "quietMove": "Stiller Zug",
+      "rookEndgame": "Turm-Endspiel",
+      "sacrifice": "Opfer",
+      "short": "Kurz",
+      "skewer": "Spieß",
+      "smotheredMate": "Erstickungsmatt",
+      "superGM": "Super-GM",
+      "trappedPiece": "Eingeschlossene Figur",
+      "underPromotion": "Unterumwandlung",
+      "veryLong": "Sehr lang",
+      "xRayAttack": "Röntgenangriff",
+      "zugzwang": "Zugzwang"
+    }
+  }
+}

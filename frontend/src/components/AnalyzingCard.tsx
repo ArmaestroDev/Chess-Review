@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   done: number;
@@ -7,11 +8,12 @@ interface Props {
 }
 
 export function AnalyzingCard({ done, total, onCancel }: Props) {
+  const { t } = useTranslation();
   const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
   return (
     <div className="cr-card">
       <div className="cr-card-hd">
-        <div className="cr-card-title">Analyzing</div>
+        <div className="cr-card-title">{t('review.analyzing.title')}</div>
         <span className="cr-pill cr-pill-mono">
           {done}/{total > 0 ? total : '…'}
         </span>
@@ -19,7 +21,7 @@ export function AnalyzingCard({ done, total, onCancel }: Props) {
       <div className="px-4 pb-4 flex flex-col items-center gap-3.5 text-center">
         <Loader2 size={32} className="animate-spin text-accent" />
         <div className="text-[12.5px] text-ink-2 leading-snug">
-          Stockfish is reviewing every move. Each ply takes a moment.
+          {t('review.analyzing.description')}
         </div>
         <div className="w-full">
           <div className="h-1.5 bg-wood-dark/60 rounded-full overflow-hidden">
@@ -34,7 +36,7 @@ export function AnalyzingCard({ done, total, onCancel }: Props) {
           onClick={onCancel}
           className="text-[11.5px] text-ink-3 hover:text-ink underline-offset-2 hover:underline"
         >
-          Cancel
+          {t('review.analyzing.cancel')}
         </button>
       </div>
     </div>
