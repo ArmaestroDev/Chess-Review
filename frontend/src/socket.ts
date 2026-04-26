@@ -36,3 +36,11 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = apiUrl
       autoConnect: true,
       transports: ['websocket', 'polling'],
     });
+
+// Re-open the socket if the server idle-disconnected us. Reason
+// 'io server disconnect' suppresses Socket.io's auto-reconnect so an
+// abandoned tab cannot immediately rebill an instance — call this before any
+// user-initiated emit so reconnection is lazy and tied to actual activity.
+export function ensureConnected(): void {
+  if (!socket.connected) socket.connect();
+}

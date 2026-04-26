@@ -13,6 +13,7 @@ const STOCKFISH_PATH = process.env.STOCKFISH_PATH ?? 'stockfish';
 const THREADS = parseInt(process.env.STOCKFISH_THREADS ?? '2', 10);
 const HASH_MB = parseInt(process.env.STOCKFISH_HASH_MB ?? '128', 10);
 const DEFAULT_DEPTH = parseInt(process.env.DEFAULT_DEPTH ?? '14', 10);
+const IDLE_TIMEOUT_MS = parseInt(process.env.IDLE_TIMEOUT_MS ?? '600000', 10);
 
 // Comma-separated list. In dev (no env var) we fall back to the Vite dev-server
 // origin so `npm run dev` still works. In prod, set this to the deployed
@@ -116,6 +117,21 @@ io.on('connection', (socket: Socket) => {
   let engineQueue: Promise<void> = Promise.resolve();
   let cancelled = false;
 
+  // Close abandoned WebSockets so Cloud Run can scale the instance to zero.
+  // socket.disconnect() (no transport close) yields reason 'io server disconnect'
+  // on the client, which suppresses Socket.io's auto-reconnect — a stale tab
+  // does not immediately rebound and rebill. The client must explicitly call
+  // socket.connect() to come back, which it does lazily on next user action.
+  let idleTimer: NodeJS.Timeout | null = null;
+  function resetIdleTimer(): void {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      console.log(`[ws] client ${socket.id} idle ${IDLE_TIMEOUT_MS}ms — disconnecting`);
+      socket.disconnect();
+    }, IDLE_TIMEOUT_MS);
+  }
+  resetIdleTimer();
+
   async function ensureEngine(): Promise<StockfishEngine> {
     if (engine) return engine;
     const e = new StockfishEngine(STOCKFISH_PATH);
@@ -140,6 +156,7 @@ io.on('connection', (socket: Socket) => {
   socket.on(
     'analyze',
     async (payload: { pgn?: string; depth?: number }) => {
+      resetIdleTimer();
       if (!payload?.pgn || typeof payload.pgn !== 'string') {
         socket.emit('analysis:event', {
           type: 'error',
@@ -182,6 +199,7 @@ io.on('connection', (socket: Socket) => {
       payload: { fenBefore?: string; uci?: string; depth?: number; ply?: number },
       ack: (result: AnalyzeMoveAck) => void,
     ) => {
+      resetIdleTimer();
       if (typeof ack !== 'function') return;
       try {
         if (!payload?.fenBefore || !payload?.uci) {
@@ -207,11 +225,16 @@ io.on('connection', (socket: Socket) => {
   );
 
   socket.on('cancel', () => {
+    resetIdleTimer();
     cancelled = true;
     teardownEngine();
   });
 
   socket.on('disconnect', () => {
+    if (idleTimer) {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
     cancelled = true;
     teardownEngine();
     console.log(`[ws] client ${socket.id} disconnected`);

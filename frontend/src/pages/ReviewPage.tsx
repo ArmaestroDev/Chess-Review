@@ -12,7 +12,7 @@ import { AccuracyCard } from '../components/AccuracyCard';
 import { AnalyzingCard } from '../components/AnalyzingCard';
 import { EvalChart } from '../components/EvalChart';
 import type { Settings as AppSettings } from '../utils/settings';
-import { socket } from '../socket';
+import { ensureConnected, socket } from '../socket';
 import type {
   AnalysisEvent,
   GameMeta,
@@ -289,6 +289,7 @@ export function ReviewPage({
       setCurrentIdx(currentIdx + 1);
       setShowingBest(false);
 
+      ensureConnected();
       socket.emit(
         'analyzeMove',
         {
@@ -467,6 +468,7 @@ export function ReviewPage({
       setMainlineCount(0);
       setMeta(emptyMeta());
       if (perspective) setOrientation(perspective);
+      ensureConnected();
       socket.emit('analyze', { pgn, depth });
     },
     [setOrientation],

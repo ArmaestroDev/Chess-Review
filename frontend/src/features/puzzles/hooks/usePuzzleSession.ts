@@ -21,7 +21,7 @@ import {
   play as playSound,
   type SoundKind,
 } from '../../../utils/sounds';
-import { socket } from '../../../socket';
+import { ensureConnected, socket } from '../../../socket';
 import { useElo } from './useElo';
 import { isDailyPuzzleId, todayDateKey } from './useDailyPuzzle';
 
@@ -291,6 +291,7 @@ export function usePuzzleSession(
       dispatch({ type: 'punisher-unavailable' });
     }, PUNISHER_FETCH_TIMEOUT_MS);
 
+    ensureConnected();
     socket.emit(
       'analyzeMove',
       {
