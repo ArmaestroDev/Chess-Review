@@ -140,25 +140,49 @@ export function PuzzleFilters({ excludeIds, onPick }: Props) {
   );
 
   // Disable Start when either set is empty OR when no puzzle matches the
-  // selected combination. Computed by actually probing pickFromMultiSelect so
-  // the disabled state can never lie about whether a click would succeed.
-  const startDisabled = useMemo(() => {
-    if (selectedTiers.size === 0 || selectedThemes.size === 0) return true;
-    return (
-      pickFromMultiSelect({
-        tiers: Array.from(selectedTiers),
-        themes: Array.from(selectedThemes),
-        excludeIds,
-      }) === null
-    );
+  // selected combination. We probe pickFromMultiSelect (now async — tier
+  // chunks are dynamic-imported) and stash the result in state. While probing,
+  // we treat the button as "tentatively enabled" if both selections are
+  // non-empty so the UI doesn't flicker every time the user toggles a chip.
+  const [probeNoMatch, setProbeNoMatch] = useState(false);
+  useEffect(() => {
+    if (selectedTiers.size === 0 || selectedThemes.size === 0) {
+      setProbeNoMatch(false);
+      return;
+    }
+    // Reset to "tentatively enabled" while probing so a stale verdict from
+    // the previous selection doesn't keep the button disabled mid-probe.
+    setProbeNoMatch(false);
+    let cancelled = false;
+    pickFromMultiSelect({
+      tiers: Array.from(selectedTiers),
+      themes: Array.from(selectedThemes),
+      excludeIds,
+    })
+      .then((pick) => {
+        if (!cancelled) setProbeNoMatch(pick === null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[PuzzleFilters] probe failed', err);
+        // Don't permanently disable on import failure — handleStart's
+        // null-check is the real guard.
+        setProbeNoMatch(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTiers, selectedThemes, excludeIds]);
 
-  const showEmptyHint =
-    selectedTiers.size > 0 && selectedThemes.size > 0 && startDisabled;
+  const startDisabled =
+    selectedTiers.size === 0 || selectedThemes.size === 0 || probeNoMatch;
 
-  function handleStart() {
+  const showEmptyHint =
+    selectedTiers.size > 0 && selectedThemes.size > 0 && probeNoMatch;
+
+  async function handleStart() {
     if (startDisabled) return;
-    const pick = pickFromMultiSelect({
+    const pick = await pickFromMultiSelect({
       tiers: Array.from(selectedTiers),
       themes: Array.from(selectedThemes),
       excludeIds,

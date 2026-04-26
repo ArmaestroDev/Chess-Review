@@ -59,7 +59,7 @@ export interface PuzzleProgress {
   };
   /** Date string (yyyy-mm-dd) → attempt; ensures one daily per UTC day. */
   dailyHistory: Record<string, PuzzleAttempt>;
-  /** Recent puzzle IDs (cap ~50) so the random picker can avoid repeats. */
+  /** Recent puzzle IDs (cap ~500) so the random picker can avoid repeats. */
   lastSeenPuzzleIds: string[];
 }
 

@@ -33,8 +33,8 @@ export function PuzzleHubPage() {
   }, [navigate, dailyPuzzle.id]);
 
   const handlePickWeakTheme = useCallback(
-    (theme: string) => {
-      const pick = pickFromCatalog('medium', {
+    async (theme: string) => {
+      const pick = await pickFromCatalog('medium', {
         theme,
         excludeIds: progress.lastSeenPuzzleIds,
       });

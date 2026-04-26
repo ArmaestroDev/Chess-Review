@@ -21,7 +21,7 @@ import { findInCatalog } from './catalog';
  * with a malformed body we can't normalize.
  */
 export async function fetchPuzzleById(id: string): Promise<Puzzle | null> {
-  const local = findInCatalog(id);
+  const local = await findInCatalog(id);
   if (local) return local;
 
   const res = await fetch(`/api/puzzles/${encodeURIComponent(id)}`);

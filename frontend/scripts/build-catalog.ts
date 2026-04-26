@@ -41,7 +41,7 @@ const TIER_BANDS: Array<[Tier, number, number]> = [
   ['expert', 2200, Number.POSITIVE_INFINITY],
 ];
 
-const SAMPLES_PER_TIER = 500;
+const SAMPLES_PER_TIER = 2000;
 const MIN_POPULARITY = 80;
 const MIN_PLAYS = 1000;
 const MIN_RATING = 400;
@@ -262,12 +262,45 @@ async function writeOutputs(
     .slice(0, 60)
     .map(([name, count]) => ({ name, count }));
 
+  // Per-tier per-theme counts over the SAMPLED catalog (not the full DB).
+  // Catalog.ts uses these to render hub UI synchronously without forcing the
+  // tier JSONs to load eagerly.
+  const themeCountsByTier = Object.fromEntries(
+    TIER_BANDS.map(([tier]) => {
+      const counts: Record<string, number> = {};
+      for (const entry of reservoirs[tier].items()) {
+        for (const th of entry.themes) {
+          counts[th] = (counts[th] ?? 0) + 1;
+        }
+      }
+      return [tier, counts];
+    }),
+  ) as Record<Tier, Record<string, number>>;
+
+  // Theme → dominant tier (tier with the most sampled puzzles tagged with that
+  // theme). Mirrors the runtime IIFE that catalog.ts used to compute.
+  const themeDifficulties: Record<string, Tier> = {};
+  for (const { name } of themes) {
+    let bestTier: Tier = 'medium';
+    let bestCount = 0;
+    for (const [tier] of TIER_BANDS) {
+      const c = themeCountsByTier[tier][name] ?? 0;
+      if (c > bestCount) {
+        bestCount = c;
+        bestTier = tier;
+      }
+    }
+    themeDifficulties[name] = bestTier;
+  }
+
   await writeFile(
     join(DATA_DIR, 'themes.json'),
     JSON.stringify(
       {
         themes,
         tierCounts,
+        themeDifficulties,
+        themeCountsByTier,
         totals: { rowsScanned: totalRows, qualityKept },
         builtAt: new Date().toISOString(),
       },

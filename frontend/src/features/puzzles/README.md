@@ -1,8 +1,5 @@
 # Chess Puzzles feature
 
-Status: Phase 0 (scaffold + catalog build). No app code yet — the hub and
-solver components ship in Phase 3+.
-
 ## Architecture
 
 ```
@@ -11,26 +8,28 @@ frontend/
     build-catalog.ts            # one-shot Lichess CSV → per-tier JSON
   src/
     pages/
-      PuzzleHubPage.tsx         # (Phase 4)
-      PuzzleSolverPage.tsx      # (Phase 3)
+      PuzzleHubPage.tsx
+      PuzzleSolverPage.tsx
     features/puzzles/
       README.md                 # this file
-      types.ts                  # Puzzle, PuzzleAttempt, EloState, ... (Phase 2)
-      styles.css                # ported .pz-* classes (Phase 3)
+      types.ts                  # Puzzle, PuzzleAttempt, EloState, ...
+      styles.css                # .pz-* classes used by hub + solver
       api/
-        fetchPuzzle.ts          # GET /api/puzzles/:id (Phase 2)
-        catalog.ts              # picks an ID by tier/theme (Phase 2)
+        fetchPuzzle.ts          # GET /api/puzzles/:id
+        catalog.ts              # picks an ID by tier/theme
       hooks/
-        usePuzzleSession.ts     # solver state machine (Phase 3)
-        useElo.ts               # localStorage-backed rating (Phase 3)
-        useDailyPuzzle.ts       # date-seeded daily pick (Phase 4)
+        usePuzzleSession.ts     # solver state machine
+        useElo.ts               # localStorage-backed rating
+        useDailyPuzzle.ts       # date-seeded daily pick
       utils/
-        elo.ts                  # pure rating math (Phase 2)
-        validateSolution.ts     # pure UCI/mate matcher (Phase 2)
-        difficulty.ts           # tier ↔ rating range (Phase 2)
+        elo.ts                  # pure rating math
+        validateSolution.ts     # pure UCI/mate matcher
+        difficulty.ts           # tier ↔ rating range
+        puzzleProgress.ts       # localStorage history + stats blob
+        i18nHelpers.ts          # tier/theme label translation hooks
       components/
-        hub/                    # (Phase 4)
-        solver/                 # (Phase 3)
+        hub/                    # PuzzleHubPage child components
+        solver/                 # PuzzleSolverPage child components
       data/                     # ⬇ produced by build-catalog
         themes.json             # canonical theme list + per-tier counts
         daily.json              # ~365 hand-picked daily puzzle IDs
@@ -161,7 +160,7 @@ npm run build:catalog -w frontend
 Quality gates applied during build:
 - `Popularity ≥ 80` (community-vetted)
 - `NbPlays ≥ 1000` (statistically settled rating)
-- ~500 puzzles sampled per tier via reservoir sampling for variety
+- ~2000 puzzles sampled per tier via reservoir sampling for variety (~10K total)
 
 The script downloads `lichess_db_puzzle.csv.zst` (~70MB) into
 `frontend/.cache/`, decompresses via streaming `zstd -d -c`, and writes

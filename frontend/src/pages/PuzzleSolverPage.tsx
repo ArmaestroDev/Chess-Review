@@ -4,10 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PuzzleSolver } from '../features/puzzles/components/solver/PuzzleSolver';
 import { fetchPuzzleById } from '../features/puzzles/api/fetchPuzzle';
-import {
-  pickFromCatalog,
-  findInCatalog,
-} from '../features/puzzles/api/catalog';
+import { pickFromCatalog } from '../features/puzzles/api/catalog';
 import { classifyTier } from '../features/puzzles/utils/difficulty';
 import { useElo } from '../features/puzzles/hooks/useElo';
 import { isDailyPuzzleId } from '../features/puzzles/hooks/useDailyPuzzle';
@@ -32,14 +29,9 @@ export function PuzzleSolverPage({ orientation, setOrientation }: Props) {
     setPuzzle(null);
     setError(null);
 
-    // Try the local catalog first (instant); fall back to the API proxy.
-    const local = findInCatalog(id);
-    if (local) {
-      setPuzzle(local);
-      return;
-    }
-
     let cancelled = false;
+    // findInCatalog is async (awaits each tier chunk); fetchPuzzleById
+    // already calls findInCatalog internally before falling back to /api.
     fetchPuzzleById(id)
       .then((p) => {
         if (cancelled) return;
@@ -60,7 +52,7 @@ export function PuzzleSolverPage({ orientation, setOrientation }: Props) {
     };
   }, [id, t]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (!puzzle) return;
     // Daily puzzles funnel back to the calendar so the user always
     // continues from a single, predictable home for daily progression.
@@ -69,15 +61,20 @@ export function PuzzleSolverPage({ orientation, setOrientation }: Props) {
       return;
     }
     const tier = classifyTier(puzzle.rating);
-    const next = pickFromCatalog(tier, {
+    const next = await pickFromCatalog(tier, {
       excludeIds: progress.lastSeenPuzzleIds,
     });
     if (!next) {
-      // Catalog miss for this tier — fall back to medium.
-      const fallback = pickFromCatalog('medium', {
+      // Catalog miss for this tier — fall back to medium, then to the hub
+      // if even medium can't produce a pick (chunk load failure or empty pool).
+      const fallback = await pickFromCatalog('medium', {
         excludeIds: progress.lastSeenPuzzleIds,
       });
-      if (fallback) navigate(`/puzzles/${fallback.id}`);
+      if (fallback) {
+        navigate(`/puzzles/${fallback.id}`);
+      } else {
+        navigate('/puzzles');
+      }
       return;
     }
     navigate(`/puzzles/${next.id}`);

@@ -8,7 +8,7 @@ import { ELO_FLOOR, ELO_CEILING, STARTING_ELO } from './elo';
 
 const KEY = 'chess-engine-puzzles';
 const HISTORY_CAP = 500;
-const RECENT_IDS_CAP = 50;
+const RECENT_IDS_CAP = 500;
 const SCHEMA_VERSION = 1;
 
 function makeDefault(): PuzzleProgress {
