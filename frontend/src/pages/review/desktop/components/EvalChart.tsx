@@ -31,7 +31,12 @@ export function EvalChart({
   const points = useMemo(() => {
     return moves.map((m) => {
       const x = PADDING_X + (m.ply / denom) * innerW;
-      const wp = whiteWinProbability(scoreToCp(m.evalAfterWhite));
+      // Checkmating moves get no engine PV for the after-position, so
+      // evalAfterWhite is {cp:0}. Pin the chart to a full win for the mover.
+      const mate = m.san.endsWith('#');
+      const wp = mate
+        ? m.color === 'w' ? 100 : 0
+        : whiteWinProbability(scoreToCp(m.evalAfterWhite));
       const y = PADDING_Y + (1 - wp / 100) * innerH;
       return { x, y, m };
     });

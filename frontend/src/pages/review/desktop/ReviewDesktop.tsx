@@ -123,7 +123,11 @@ export function ReviewDesktop({
               className="relative grid gap-2.5 items-stretch"
               style={{ gridTemplateColumns: '22px 1fr', height: boardSize }}
             >
-              <EvalBar evalWhite={review.evalForBar} orientation={orientation} />
+              <EvalBar
+                evalWhite={review.evalForBar}
+                orientation={orientation}
+                terminal={review.terminal}
+              />
               <Board
                 fen={review.displayedFen}
                 size={boardSize}

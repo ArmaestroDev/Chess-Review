@@ -6,6 +6,7 @@ interface Props {
   orientation?: 'white' | 'black';
   layout?: 'vertical' | 'horizontal';
   height?: number | string;
+  terminal?: 'white-wins' | 'black-wins' | null;
 }
 
 export function EvalBar({
@@ -13,12 +14,21 @@ export function EvalBar({
   orientation = 'white',
   layout = 'vertical',
   height = '100%',
+  terminal = null,
 }: Props) {
   const cp = scoreToCp(evalWhite ?? { cp: 0 });
-  const wp = clamp(whiteWinProbability(cp), 0, 100);
-  const display = formatScoreCompact(evalWhite);
-  const whiteWinning = cp >= 0;
-  const labelInWhiteSlab = whiteWinning;
+  let wp = clamp(whiteWinProbability(cp), 0, 100);
+  let display = formatScoreCompact(evalWhite);
+  let labelInWhiteSlab = cp >= 0;
+  if (terminal === 'white-wins') {
+    wp = 100;
+    display = '1-0';
+    labelInWhiteSlab = true;
+  } else if (terminal === 'black-wins') {
+    wp = 0;
+    display = '0-1';
+    labelInWhiteSlab = false;
+  }
 
   if (layout === 'horizontal') {
     return (

@@ -90,6 +90,7 @@ export function ReviewMobile({
               evalWhite={review.evalForBar}
               orientation={orientation}
               layout="horizontal"
+              terminal={review.terminal}
             />
           </div>
         )}

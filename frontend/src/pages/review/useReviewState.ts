@@ -530,6 +530,15 @@ export function useReviewState({ orientation, setOrientation }: ReviewStateOptio
   const hasGame = !showLoader;
   const sideToMove = (displayedFen.split(' ')[1] ?? 'w') as 'w' | 'b';
   const playerToMove: 'white' | 'black' = sideToMove === 'w' ? 'white' : 'black';
+  const terminal = useMemo<'white-wins' | 'black-wins' | null>(() => {
+    try {
+      const c = new Chess(displayedFen);
+      if (c.isCheckmate()) return c.turn() === 'w' ? 'black-wins' : 'white-wins';
+    } catch {
+      // ignore malformed FEN
+    }
+    return null;
+  }, [displayedFen]);
   const expectedTotal =
     meta.totalPlies > 0 ? meta.totalPlies : Math.max(mainlineCount, 1);
 
@@ -564,6 +573,7 @@ export function useReviewState({ orientation, setOrientation }: ReviewStateOptio
     // board display
     displayedFen,
     evalForBar,
+    terminal,
     highlights,
     arrows,
     badge,
