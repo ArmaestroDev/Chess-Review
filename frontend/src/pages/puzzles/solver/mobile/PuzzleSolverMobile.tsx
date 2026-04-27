@@ -5,15 +5,16 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
 import { pickRespectingFilters } from '../../../../features/puzzles/utils/filters';
-import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import { useElo } from '../../../../features/puzzles/hooks/useElo';
 import { isDailyPuzzleId } from '../../../../features/puzzles/hooks/useDailyPuzzle';
 import { usePuzzleSession } from '../../../../features/puzzles/hooks/usePuzzleSession';
-import { useTierLabel } from '../../../../features/puzzles/utils/i18nHelpers';
 import { PuzzleBoard } from '../../../../features/puzzles/components/solver/PuzzleBoard';
 import { SolverInfoPanel } from '../../../../features/puzzles/components/solver/SolverInfoPanel';
 import { PuzzleResultPanel } from '../../../../features/puzzles/components/solver/PuzzleResultPanel';
-import { usePublishMobileTopBarActions } from '../../../../shared/components/MobileTopBarContext';
+import {
+  usePublishMobileTopBarActions,
+  useHideMobileBottomNav,
+} from '../../../../shared/components/MobileTopBarContext';
 import type { Puzzle } from '../../../../features/puzzles/types';
 
 interface Props {
@@ -120,7 +121,6 @@ function PuzzleSolverMobileInner({
   setOrientation,
 }: InnerProps) {
   const { t } = useTranslation();
-  const tierLabel = useTierLabel();
   const session = usePuzzleSession(puzzle);
   const { elo, progress } = useElo();
 
@@ -129,6 +129,9 @@ function PuzzleSolverMobileInner({
     flipBoard: () => setOrientation(orientation === 'white' ? 'black' : 'white'),
     clearBoard: null,
   });
+
+  // Hide the bottom MobileNav while solving — the action row below replaces it.
+  useHideMobileBottomNav(true);
 
   const handleRetry = useCallback(() => {
     if (session.state.kind === 'failed') {
@@ -144,19 +147,28 @@ function PuzzleSolverMobileInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzle.id]);
 
-  // Mobile board: use the available width of the page area.
+  // Mobile board: fill available width, but also clamp by available height so
+  // the board doesn't overflow on short viewports. Reserves are approximate
+  // (topbar, page padding, meta row, info panel, solved footer, action
+  // buttons, gaps, safe area) — we deliberately don't measure the DOM. The
+  // 220px floor prefers a shrunken board over vertical overflow on landscape
+  // phones / split screens.
   const [boardSize, setBoardSize] = useState(320);
   useEffect(() => {
     function update() {
-      const w = Math.min(window.innerWidth - 24, 560);
-      setBoardSize(Math.max(240, Math.floor(w)));
+      const availW = Math.min(window.innerWidth - 20, 720);
+      // Chrome reserve when bottom nav is hidden + buttons are bigger:
+      // ~50 topbar + 16 page padding + 26 meta row + 120 info panel +
+      // 16 solved footer + 56 bottom buttons + 40 gaps + 16 safe-area ≈ 340
+      const availH = window.innerHeight - 340;
+      const size = Math.max(220, Math.min(availW, availH));
+      setBoardSize(Math.floor(size));
     }
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const tier = classifyTier(puzzle.rating);
   const isTerminal =
     session.state.kind === 'completed' ||
     session.state.kind === 'failed' ||
@@ -171,8 +183,14 @@ function PuzzleSolverMobileInner({
     session.state.kind === 'awaiting-user-move' && session.state.hintLevel > 0;
 
   return (
-    <main className="cr-mobile-main">
-      <div className="cr-mobile-page">
+    <main
+      className="cr-mobile-main"
+      style={{ overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
+    >
+      <div
+        className="cr-mobile-page"
+        style={{ gap: 8, padding: '8px 10px', flex: 1, minHeight: 0 }}
+      >
         {/* Top meta row */}
         <div className="flex items-center justify-between gap-3">
           <Link
@@ -182,66 +200,9 @@ function PuzzleSolverMobileInner({
             <ChevronLeft size={14} />
             {t('puzzles.solver.back')}
           </Link>
-          <div className="flex items-center gap-2 text-[11px] text-ink-3">
-            <span className="cr-pill cr-pill-mono">
-              {tierLabel(tier)} · {puzzle.rating}
-            </span>
-            <span className="cr-pill cr-pill-mono">
-              {t('puzzles.solver.rating', { elo })}
-            </span>
-          </div>
-        </div>
-
-        {/* Board */}
-        <div
-          className="cr-mobile-board-wrap"
-          style={{ width: boardSize, alignSelf: 'center' }}
-        >
-          <PuzzleBoard
-            state={session.state}
-            fen={session.displayFen}
-            size={boardSize}
-            orientation={orientation}
-            userColor={session.userColor}
-            highlights={session.highlights}
-            onMove={session.submitMove}
-          />
-        </div>
-
-        {/* Action buttons (Hint / Reveal / Next) */}
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={session.requestHint}
-            disabled={!solving || session.state.kind !== 'awaiting-user-move'}
-            className={
-              'h-11 inline-flex items-center justify-center gap-2 rounded-[9px] border text-[12.5px] font-medium transition-colors ' +
-              (hintActive
-                ? 'border-accent bg-accent-soft text-accent-ink'
-                : 'border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-45')
-            }
-          >
-            <Lightbulb size={16} />
-            {t('puzzles.solver.rail.hint')}
-          </button>
-          <button
-            type="button"
-            onClick={session.revealSolution}
-            disabled={!solving}
-            className="h-11 inline-flex items-center justify-center gap-2 rounded-[9px] border border-line bg-wood-card text-ink-2 text-[12.5px] font-medium hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
-          >
-            <Eye size={16} />
-            {t('puzzles.solver.rail.reveal')}
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!isTerminal || punisherPending}
-            className="h-11 inline-flex items-center justify-center gap-2 rounded-[9px] border border-line bg-wood-card text-ink-2 text-[12.5px] font-medium hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
-          >
-            {t('puzzles.solver.rail.next')}
-            <ChevronRight size={16} />
-          </button>
+          <span className="cr-pill cr-pill-mono text-[11px] text-ink-3">
+            {t('puzzles.solver.rating', { elo })}
+          </span>
         </div>
 
         {/* Info / result panel */}
@@ -281,8 +242,66 @@ function PuzzleSolverMobileInner({
           />
         )}
 
+        {/* Board — flex-grow wrapper centers it in the freed vertical space */}
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <div
+            className="cr-mobile-board-wrap"
+            style={{ width: boardSize }}
+          >
+            <PuzzleBoard
+              state={session.state}
+              fen={session.displayFen}
+              size={boardSize}
+              orientation={orientation}
+              userColor={session.userColor}
+              highlights={session.highlights}
+              onMove={session.submitMove}
+            />
+          </div>
+        </div>
+
+        {/* Solved counter — small, above the action row */}
         <div className="text-[10.5px] text-ink-3 text-center">
           {t('puzzles.solver.solved')}: {progress.stats.solved}
+        </div>
+
+        {/* Bottom action row — bigger buttons replacing the hidden MobileNav */}
+        <div
+          className="grid grid-cols-3 gap-2"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
+        >
+          <button
+            type="button"
+            onClick={session.requestHint}
+            disabled={!solving || session.state.kind !== 'awaiting-user-move'}
+            className={
+              'h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border text-[14px] font-semibold transition-colors ' +
+              (hintActive
+                ? 'border-accent bg-accent-soft text-accent-ink'
+                : 'border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-45')
+            }
+          >
+            <Lightbulb size={20} />
+            {t('puzzles.solver.rail.hint')}
+          </button>
+          <button
+            type="button"
+            onClick={session.revealSolution}
+            disabled={!solving}
+            className="h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border border-line bg-wood-card text-ink-2 text-[14px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
+          >
+            <Eye size={20} />
+            {t('puzzles.solver.rail.reveal')}
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!isTerminal || punisherPending}
+            className="h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border border-line bg-wood-card text-ink-2 text-[14px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
+          >
+            {t('puzzles.solver.rail.next')}
+            <ChevronRight size={20} />
+          </button>
         </div>
       </div>
     </main>

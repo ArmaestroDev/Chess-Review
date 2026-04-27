@@ -10,6 +10,10 @@ import type { ChessComActivity } from '../utils/chessComActivity';
 
 interface Props {
   state: ChessComProfileState;
+  /** When true, drop the avg-opponent / accuracy / top-opening rows so the
+   *  card ends at the last-30-games W/L bar. The puzzle hub passes this so
+   *  the card fits alongside two other panels in a single column. */
+  compact?: boolean;
 }
 
 const TIME_CLASS_KEYS = ['chess_bullet', 'chess_blitz', 'chess_rapid'] as const;
@@ -25,7 +29,7 @@ const WIN_COLOR = 'rgba(80, 130, 30, 0.95)';
 const LOSS_COLOR = 'rgba(190, 60, 50, 0.95)';
 const DRAW_COLOR = 'rgba(140, 130, 110, 0.85)';
 
-export function ChessComStatsCard({ state }: Props) {
+export function ChessComStatsCard({ state, compact = false }: Props) {
   const { t, i18n } = useTranslation();
   const { committedUsername, profile, stats, activity, loading, error } = state;
 
@@ -57,6 +61,7 @@ export function ChessComStatsCard({ state }: Props) {
             activity={activity}
             username={committedUsername}
             lang={i18n.language}
+            compact={compact}
           />
         )}
       </div>
@@ -70,12 +75,14 @@ function Content({
   activity,
   username,
   lang,
+  compact,
 }: {
   profile: ChessComProfile | null;
   stats: ChessComStats | null;
   activity: ChessComActivity | null;
   username: string;
   lang: string;
+  compact: boolean;
 }) {
   const displayName = profile?.name?.trim() || profile?.username || username;
   const handle = profile?.username || username;
@@ -96,7 +103,7 @@ function Content({
         </div>
       )}
       {activity && activity.total > 0 && (
-        <ActivitySection activity={activity} lang={lang} />
+        <ActivitySection activity={activity} lang={lang} compact={compact} />
       )}
     </>
   );
@@ -260,15 +267,17 @@ function RecordChip({
 function ActivitySection({
   activity,
   lang,
+  compact,
 }: {
   activity: ChessComActivity;
   lang: string;
+  compact: boolean;
 }) {
   const { t } = useTranslation();
   const fmt = new Intl.NumberFormat(lang);
 
   return (
-    <div className="border-t border-line px-4 py-3 flex flex-col gap-2">
+    <div className="border-t border-line px-4 py-3 flex flex-col gap-1">
       {/* Headline: count + win rate big */}
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[10.5px] uppercase tracking-[0.06em] text-ink-3 font-semibold">
@@ -291,38 +300,40 @@ function ActivitySection({
         <RecordChip value={activity.draws} tone="draw" fmt={fmt} label="D" />
       </div>
 
-      <div className="flex flex-col gap-0.5 pt-1">
-        {activity.avgOppRating !== null && (
-          <ActivityRow
-            label={t('review.chessComStats.activity.avgOpp')}
-            value={fmt.format(activity.avgOppRating)}
-          />
-        )}
-        {activity.avgAccuracy !== null && (
-          <ActivityRow
-            label={t('review.chessComStats.activity.avgAcc')}
-            value={`${activity.avgAccuracy.toFixed(1)}%`}
-          />
-        )}
-        {activity.topOpening && (
-          <ActivityRow
-            label={t('review.chessComStats.activity.topOpening')}
-            value={
-              <a
-                href={activity.topOpening.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="hover:text-accent-ink block text-right line-clamp-2"
-                title={activity.topOpening.name}
-              >
-                {activity.topOpening.name}{' '}
-                <span className="text-ink-4 whitespace-nowrap">×{activity.topOpening.count}</span>
-              </a>
-            }
-            wrap
-          />
-        )}
-      </div>
+      {!compact && (
+        <div className="flex flex-col gap-0.5 pt-1">
+          {activity.avgOppRating !== null && (
+            <ActivityRow
+              label={t('review.chessComStats.activity.avgOpp')}
+              value={fmt.format(activity.avgOppRating)}
+            />
+          )}
+          {!compact && activity.avgAccuracy !== null && (
+            <ActivityRow
+              label={t('review.chessComStats.activity.avgAcc')}
+              value={`${activity.avgAccuracy.toFixed(1)}%`}
+            />
+          )}
+          {!compact && activity.topOpening && (
+            <ActivityRow
+              label={t('review.chessComStats.activity.topOpening')}
+              value={
+                <a
+                  href={activity.topOpening.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:text-accent-ink block text-right line-clamp-2"
+                  title={activity.topOpening.name}
+                >
+                  {activity.topOpening.name}{' '}
+                  <span className="text-ink-4 whitespace-nowrap">×{activity.topOpening.count}</span>
+                </a>
+              }
+              wrap
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

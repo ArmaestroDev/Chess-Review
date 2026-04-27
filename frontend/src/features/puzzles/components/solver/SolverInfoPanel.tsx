@@ -27,7 +27,21 @@ export function SolverInfoPanel({ state, puzzle, userColor }: Props) {
 
       <div className="pz-info-body">
         <div className="pz-prompt">
-          <span className="pz-prompt-bullet" />
+          {state.kind === 'awaiting-user-move' ? (
+            <span
+              className={
+                'inline-flex items-center justify-center w-4 h-4 rounded-[4px] text-[12px] font-semibold border border-line-2 mt-0.5 shrink-0 ' +
+                (userColor === 'white'
+                  ? 'bg-stone-100 text-stone-900'
+                  : 'bg-stone-900 text-stone-100')
+              }
+              aria-hidden
+            >
+              {userColor === 'white' ? '♔' : '♚'}
+            </span>
+          ) : (
+            <span className="pz-prompt-bullet" />
+          )}
           <span>{sideToMove}</span>
         </div>
 

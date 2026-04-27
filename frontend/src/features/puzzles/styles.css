@@ -289,20 +289,33 @@
 
 /* ─── Hub layout ───────────────────────────────────────────── */
 
-/* Three-column layout, mirroring ReviewDesktop: left + center board + right.
+/* Three-column layout: left info column + center board + right info column.
    The fixed track widths must stay in sync with PuzzleHubDesktop's board
-   sizing formula (leftCol=320, rightCol=360).
+   sizing formula (leftCol=320, rightCol=360). The board lives in the middle
+   track ("1fr") so wider screens give more room to the board.
    `flex-1 min-h-0 overflow-hidden` + `grid-template-rows: 1fr` makes the
    grid fill the remaining viewport (AppLayout is `h-screen overflow-hidden`)
-   and stretches columns to that height so flex-children inside (the filter
-   panel) can `flex-1 min-h-0` and scroll internally. */
+   and stretches columns to that height so flex-children inside can
+   `flex-1 min-h-0` and scroll internally. */
 .pz-hub-grid {
   @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-stretch flex-1 min-h-0 overflow-hidden;
   grid-template-columns: 320px minmax(0, 1fr) 360px;
   grid-template-rows: 1fr;
 }
 .pz-hub-col {
-  @apply flex flex-col gap-4 min-w-0 min-h-0 overflow-hidden;
+  @apply flex flex-col gap-4 min-w-0 min-h-0 overflow-y-auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 232, 200, 0.18) transparent;
+}
+.pz-hub-col::-webkit-scrollbar {
+  width: 6px;
+}
+.pz-hub-col::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pz-hub-col::-webkit-scrollbar-thumb {
+  background: rgba(245, 232, 200, 0.18);
+  border-radius: 3px;
 }
 .pz-hub-center {
   @apply flex justify-center min-w-0 min-h-0;
@@ -315,6 +328,13 @@
   background: rgb(var(--wood-card));
   border-color: var(--line);
   color: rgb(var(--ink-2));
+}
+/* Invisible spacer variant — occupies the same vertical space as the greeting
+   slot so the opposite column's first card lines up at the same Y. Used at
+   the top of the right column where there's no analogue to the greeting. */
+.pz-hub-slot--spacer {
+  visibility: hidden;
+  pointer-events: none;
 }
 /* Back-to-hub variant — same shape as the greeting, but interactive. */
 .pz-hub-slot--back {

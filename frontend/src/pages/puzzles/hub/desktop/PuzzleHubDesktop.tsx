@@ -3,10 +3,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowUpDown,
-  ChevronDown,
-  ChevronUp,
   Loader2,
   Play,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Board } from '../../../../shared/components/Board';
@@ -16,7 +15,7 @@ import { DailyPuzzleCard } from '../../../../features/puzzles/components/hub/Dai
 import { ProgressCard } from '../../../../features/puzzles/components/hub/ProgressCard';
 import { ActivityBars } from '../../../../features/puzzles/components/hub/ActivityBars';
 import { RecentAttemptsCard } from '../../../../features/puzzles/components/hub/RecentAttemptsCard';
-import { PuzzleFilters } from '../../../../features/puzzles/components/hub/PuzzleFilters';
+import { PuzzleFiltersModal } from '../../../../features/puzzles/components/hub/PuzzleFiltersModal';
 import { DailyCalendarModal } from '../../../../features/puzzles/components/hub/DailyCalendarModal';
 import { SolverSideRail } from '../../../../features/puzzles/components/solver/SolverSideRail';
 import { SolverInfoPanel } from '../../../../features/puzzles/components/solver/SolverInfoPanel';
@@ -32,6 +31,8 @@ import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
 import { pickFromMultiSelect } from '../../../../features/puzzles/api/catalog';
 import { useHubFilters } from '../../../../features/puzzles/hooks/useHubFilters';
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
+import { useChessComProfile } from '../../../review/useChessComProfile';
+import { ChessComStatsCard } from '../../../review/components/ChessComStatsCard';
 import type { Puzzle } from '../../../../features/puzzles/types';
 import type { Settings } from '../../../../shared/utils/settings';
 
@@ -51,8 +52,11 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
   const { puzzle: dailyPuzzle, date: dailyDate } = useDailyPuzzle();
   const { progress } = useElo();
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersModalOpen, setFiltersModalOpen] = useState(false);
   const filters = useHubFilters({ defaultTier: classifyTier(progress.elo) });
+  const chessCom = useChessComProfile({
+    defaultUsername: settings.chessComUsername,
+  });
 
   // Same-component routing means the openCalendar handoff fires here too.
   useEffect(() => {
@@ -64,7 +68,9 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
   }, [location, navigate]);
 
   // Centerpiece board sizing — mirrors ReviewDesktop's formula minus the
-  // eval-bar gap. Stays in sync with the .pz-hub-grid track widths.
+  // eval-bar gap. The board lives in the middle (1fr) track; the leftCol +
+  // rightCol widths must stay in sync with the .pz-hub-grid template. Cap
+  // raised to 840 so wider screens can render a larger board.
   const [boardSize, setBoardSize] = useState(560);
   useEffect(() => {
     function update() {
@@ -75,7 +81,7 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
       const usableW = Math.min(window.innerWidth, 1600);
       const availW = usableW - leftCol - rightCol - gaps - horizPad;
       const availH = window.innerHeight - 64 - 120 - 40;
-      const size = Math.max(320, Math.min(availW, availH, 720));
+      const size = Math.max(320, Math.min(availW, availH, 840));
       setBoardSize(Math.floor(size));
     }
     update();
@@ -236,6 +242,7 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
 
   return (
     <main className="pz-hub-grid">
+      {/* LEFT info column — greeting/back slot + chess.com + progress + activity. */}
       <div className="pz-hub-col">
         {/* Slot above the panels — greeting on the hub, back-to-hub label in
             solver mode. Both share .pz-hub-slot so the column never shifts
@@ -258,14 +265,18 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
             })}
           </div>
         )}
+        <ChessComStatsCard state={chessCom} compact />
         <ProgressCard progress={progress} />
-        <ActivityBars history={progress.history} />
-        <RecentAttemptsCard
-          history={progress.history}
-          onPickAttempt={handleReplay}
-        />
+        {/* mt-auto pushes the bottom panel against the column floor so the
+            left and right columns share both the top and bottom Y of their
+            outermost cards. */}
+        <div className="mt-auto">
+          <ActivityBars history={progress.history} />
+        </div>
       </div>
 
+      {/* CENTER board column — survives hub↔solver transitions because it
+          stays mounted in both branches. */}
       <div className="pz-hub-center">
         <div
           className="flex flex-col gap-2.5 items-stretch"
@@ -337,7 +348,13 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
         </div>
       </div>
 
+      {/* RIGHT info column — daily + quick-start + recent in hub mode, solver
+          panels in solver mode. */}
       <div className="pz-hub-col">
+        {/* Invisible spacer that mirrors the left column's greeting/back slot
+            height so the first content card on each side starts at the same
+            Y. */}
+        <div className="pz-hub-slot pz-hub-slot--spacer" aria-hidden />
         {inSolver ? (
           <>
             <SolverRightPanel
@@ -348,12 +365,14 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
               onRetry={handleRetry}
             />
             {puzzle && !solverError && (
-              <SolverSideRail
-                state={session.state}
-                onHint={session.requestHint}
-                onReveal={session.revealSolution}
-                onNext={handleNext}
-              />
+              <div className="mt-auto">
+                <SolverSideRail
+                  state={session.state}
+                  onHint={session.requestHint}
+                  onReveal={session.revealSolution}
+                  onNext={handleNext}
+                />
+              </div>
             )}
           </>
         ) : (
@@ -380,20 +399,20 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
               </div>
               <button
                 type="button"
-                onClick={() => setFiltersOpen((v) => !v)}
+                onClick={() => setFiltersModalOpen(true)}
                 className="pz-quick-card-trigger"
-                aria-expanded={filtersOpen}
               >
                 <span>{t('puzzles.hub.filters.adjustHeader')}</span>
-                {filtersOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                <SlidersHorizontal size={16} />
               </button>
             </div>
-            {filtersOpen && (
-              <PuzzleFilters
-                filters={filters}
-                excludeIds={progress.lastSeenPuzzleIds}
+            {/* mt-auto: see matching note in the left column. */}
+            <div className="mt-auto">
+              <RecentAttemptsCard
+                history={progress.history}
+                onPickAttempt={handleReplay}
               />
-            )}
+            </div>
           </>
         )}
       </div>
@@ -401,6 +420,12 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
       <DailyCalendarModal
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
+      />
+      <PuzzleFiltersModal
+        open={filtersModalOpen}
+        onClose={() => setFiltersModalOpen(false)}
+        filters={filters}
+        excludeIds={progress.lastSeenPuzzleIds}
       />
     </main>
   );

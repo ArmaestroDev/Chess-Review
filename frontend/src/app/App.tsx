@@ -201,7 +201,9 @@ function AppLayout() {
         />
       </Routes>
 
-      {isMobile && <MobileNav onOpenSettings={() => setSettingsOpen(true)} />}
+      {isMobile && !mobileTopBar.hideBottomNav && (
+        <MobileNav onOpenSettings={() => setSettingsOpen(true)} />
+      )}
 
       <SettingsModal
         open={settingsOpen}

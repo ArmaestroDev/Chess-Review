@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowUpDown } from 'lucide-react';
 import { Board } from '../../../shared/components/Board';
@@ -16,6 +16,7 @@ import type { Settings as AppSettings } from '../../../shared/utils/settings';
 import { mainlineNodeIdForPly } from '../useReviewState';
 import type { ReviewState } from '../useReviewState';
 import type { ChessComProfileState } from '../useChessComProfile';
+import { deriveStripCaptures } from '../../../shared/utils/capturedPieces';
 
 interface Props {
   settings: AppSettings;
@@ -57,6 +58,15 @@ export function ReviewDesktop({
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+
+  // Captured pieces / material advantage derived from the displayed FEN.
+  // Recomputed only when displayedFen or strip orientation changes.
+  const topColor = review.playerLabel.topColor;
+  const bottomColor = review.playerLabel.bottomColor;
+  const { topCaptured, topAdvantage, bottomCaptured, bottomAdvantage } = useMemo(
+    () => deriveStripCaptures(review.displayedFen, topColor, bottomColor),
+    [review.displayedFen, topColor, bottomColor],
+  );
 
   return (
     <>
@@ -114,10 +124,12 @@ export function ReviewDesktop({
             style={{ width: boardSize + 32 }}
           >
             <PlayerStrip
-              color={review.playerLabel.topColor}
+              color={topColor}
               name={review.playerLabel.top}
               rating={review.playerLabel.topRating}
-              active={review.hasGame && review.playerToMove === review.playerLabel.topColor}
+              active={review.hasGame && review.playerToMove === topColor}
+              captured={review.hasGame ? topCaptured : undefined}
+              advantage={review.hasGame ? topAdvantage : undefined}
             />
             <div
               className="relative grid gap-2.5 items-stretch"
@@ -147,12 +159,12 @@ export function ReviewDesktop({
               </div>
             </div>
             <PlayerStrip
-              color={review.playerLabel.bottomColor}
+              color={bottomColor}
               name={review.playerLabel.bottom}
               rating={review.playerLabel.bottomRating}
-              active={
-                review.hasGame && review.playerToMove === review.playerLabel.bottomColor
-              }
+              active={review.hasGame && review.playerToMove === bottomColor}
+              captured={review.hasGame ? bottomCaptured : undefined}
+              advantage={review.hasGame ? bottomAdvantage : undefined}
             />
           </div>
         </div>

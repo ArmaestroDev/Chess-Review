@@ -60,24 +60,28 @@ src/
       ReviewPage.tsx    — picks desktop/mobile via useIsMobileContext, owns the shared review-state hook
       useReviewState.ts — the hook (move tree, socket sub, navigation, playback, branch creation)
       components/       — variant-agnostic review components (PgnLoader, MovesCard, GameMeta, AccuracyCard, AnalyzingCard, CommentBubble)
-      desktop/ReviewDesktop.tsx + desktop/components/ (EvalBar, EvalChart, MoveList, PlayerStrip — desktop-only chrome)
+      desktop/ReviewDesktop.tsx + desktop/components/ (EvalBar, EvalChart, MoveList — desktop-only chrome)
       mobile/ReviewMobile.tsx
+      useChessComProfile.ts + utils/chessComActivity.ts (chess.com fetch + 30-game activity, lifted above the variant split)
     puzzles/
       hub/PuzzleHubPage.tsx + hub/desktop/PuzzleHubDesktop.tsx + hub/mobile/PuzzleHubMobile.tsx
-      solver/PuzzleSolverPage.tsx + solver/desktop/PuzzleSolverDesktop.tsx + solver/mobile/PuzzleSolverMobile.tsx
+      solver/mobile/PuzzleSolverMobile.tsx   (no PuzzleSolverPage / no solver/desktop — see "Puzzles routing" below)
   main.tsx              — entry; imports './i18n' for side-effect init before <App/>, plus index.css + features/puzzles/styles.css
 ```
 
-**Routing.** `app/App.tsx` is the BrowserRouter shell — wraps the tree in `IsMobileProvider`, mounts either the full `Header` (desktop) or the `cr-mobile-topbar` inline JSX (mobile), and renders the `MobileNav` bottom tab bar when `isMobile`. The three routes are:
+**Routing.** `app/App.tsx` is the BrowserRouter shell — wraps the tree in `IsMobileProvider` and `MobileTopBarProvider`, mounts either the full `Header` (desktop) or the `cr-mobile-topbar` inline JSX (mobile), and renders the `MobileNav` bottom tab bar when `isMobile`. There are three routes but only two page components:
 - `/` → `pages/review/ReviewPage.tsx` (eagerly imported)
-- `/puzzles` → `pages/puzzles/hub/PuzzleHubPage.tsx` (lazy)
-- `/puzzles/:id` → `pages/puzzles/solver/PuzzleSolverPage.tsx` (lazy)
+- `/puzzles` AND `/puzzles/:id` → `pages/puzzles/hub/PuzzleHubPage.tsx` (lazy, both routes mount the same component; the `:id` param drives the hub-vs-solver branch)
 
 The puzzles bundle is code-split via `React.lazy` so review-only users never download the catalog JSONs.
+
+**Puzzles routing — hub/solver split.** Inside `PuzzleHubPage`, desktop always renders `PuzzleHubDesktop` for both `/puzzles` and `/puzzles/:id`. This is deliberate: a single component owns the centerpiece board so it does **not unmount** when the user transitions between hub and solver views — only the side panels swap based on `useParams().id`. Mobile, by contrast, lazy-loads two separate components (`PuzzleHubMobile` for no id, `PuzzleSolverMobile` for an id) since the mobile layout is single-column and remounting the board there is fine. **There is no `PuzzleSolverPage.tsx`** — don't recreate one; route the solver desktop UI through `PuzzleHubDesktop` instead.
 
 **Viewport gate (`hooks/useIsMobile.tsx`).** A single `IsMobileProvider` (mounted in `App.tsx`) owns one `matchMedia('(max-width: 768px)')` subscription and broadcasts via context. Every consumer (AppLayout, ReviewPage, PuzzleHubPage, PuzzleSolverPage) reads through `useIsMobileContext` so the entire tree flips in the same render — using bare `useIsMobile()` in two places would briefly desync chrome and body at the breakpoint cross. Mobile variants are **lazy-loaded** (e.g. `ReviewMobile`, `PuzzleHubMobile`, `PuzzleSolverMobile`) so desktop users don't pay for them.
 
 **Review state lives in `pages/review/useReviewState.ts`, hoisted above the desktop/mobile split.** `ReviewPage.tsx` calls `useReviewState({ orientation, setOrientation })` and threads the result (`ReviewState = ReturnType<typeof useReviewState>`) into whichever variant is mounted. This is **load-bearing**: if you let each variant own its own state, a desktop↔mobile breakpoint cross would tear down the move tree and the in-flight socket subscription. Only one variant is ever mounted at a time, so there's still exactly one socket listener. The hook also cancels the backend on unmount via a `statusRef` if a run was in-flight.
+
+**Chess.com profile state is hoisted the same way.** `pages/review/useChessComProfile.ts` owns profile/stats/recent-games fetching plus the derived 30-game activity (`utils/chessComActivity.ts`); `ReviewPage` calls it once and threads the result through to `ReviewDesktop`/`ReviewMobile` so it survives breakpoint crosses. `usernameInput` (live text in the loader) is intentionally separate from `committedUsername` (only updates on actual load) so the `ChessComStatsCard` doesn't flicker per keystroke.
 
 **Move tree, not flat array.** `shared/utils/tree.ts` defines an immutable `MoveTree` (`{ rootId, nodes: Record<NodeId, MoveNode> }`). Each node has `childrenIds[]`; index 0 is the mainline continuation, additional children are user-explored branches. `useReviewState` tracks `currentLine: NodeId[]` (root → ... → current) and `currentIdx`. Dragging a piece calls `addChild` with `pending: true`, emits `analyzeMove`, and replaces the placeholder via `updateMove` when the ack arrives. **During streaming the cursor does NOT auto-advance** — `currentLine` is only seeded to the full mainline when status flips to `'ready'`. Branch `analyzeMove` calls reuse the depth captured at analyze-time (the `analysisDepth` state), so changing the loader's depth slider after a game finishes does not affect branch evaluation depth.
 
@@ -86,6 +90,8 @@ The puzzles bundle is code-split via `React.lazy` so review-only users never dow
 **Themes.** Four palettes (`wood`, `purple`, `ocean`, `lagoon`) × two modes (`light`, `dark`), applied as `theme-* mode-*` classes on `<html>`; all themable colors are CSS vars in `index.css`. Selection is persisted to `localStorage` under `chess-engine-settings` (separate from `chess-engine-muted` and the puzzle progress key — these are deliberately disjoint so one corrupt blob can't nuke another). `applyTheme` in `shared/utils/settings.ts` is the only writer of those classes.
 
 **Mobile chrome.** The `cr-mobile-*` classes in `index.css` (topbar, bottom nav, page wrapper, eval chip, tabs, playback controls) are the mobile counterparts of the desktop `cr-*` classes. The mobile topbar is rendered inline in `app/App.tsx`; the bottom nav is `shared/components/MobileNav.tsx` (Review / Puzzles tabs + Settings button). Don't mix `cr-mobile-*` into desktop layouts — desktop never mounts the mobile tree.
+
+**Mobile topbar action publishing (`shared/components/MobileTopBarContext.tsx`).** The topbar's flip-board and clear-board buttons are owned by the topbar in `App.tsx`, but their handlers live on whichever page is currently mounted. Pages publish them via `usePublishMobileTopBarActions({ flipBoard, clearBoard })` — pass `null` to hide a button (e.g. the puzzle hub publishes both nulls). The publish hook intentionally has no cleanup: every render overwrites the previous values, so the next page's mount-effect wins. If a page forgets to publish, the previous page's stale handler will fire — always call the hook, even if both actions are null.
 
 **i18n.** `i18next` + `react-i18next`. Translation bundles live at `i18n/{en,de}.json` and ship with the JS bundle (`react: { useSuspense: false }` — no async loading). `main.tsx` imports `./i18n` for its side-effect init **before** any component renders, so `useTranslation` works on first paint. `Settings.language` is the single source of truth — `app/App.tsx` syncs `i18n.changeLanguage` to it; do not call `i18n.changeLanguage` elsewhere. The persisted default is `de`, with `detectBrowserLanguage()` (in `shared/utils/settings.ts`) as the fallback when no saved settings exist.
 
@@ -99,7 +105,7 @@ The puzzles bundle is code-split via `React.lazy` so review-only users never dow
 
 ### Puzzles feature (`frontend/src/features/puzzles/`)
 
-Self-contained sub-feature with its own README at `frontend/src/features/puzzles/README.md` — that file is the source of truth for the feature's design (data pipeline, ELO formula, solver state machine, persistence schema). When working in this area, read that README first. Note: the README's directory diagram still refers to `pages/PuzzleHubPage.tsx` and `pages/PuzzleSolverPage.tsx`; the actual paths are now `pages/puzzles/hub/PuzzleHubPage.tsx` and `pages/puzzles/solver/PuzzleSolverPage.tsx` (each with `desktop/` + `mobile/` subdirectories).
+Self-contained sub-feature with its own README at `frontend/src/features/puzzles/README.md` — that file is the source of truth for the feature's design (data pipeline, ELO formula, solver state machine, persistence schema). When working in this area, read that README first. Note: the README's directory diagram is stale — it lists `pages/PuzzleHubPage.tsx` and `pages/PuzzleSolverPage.tsx`, but the latter no longer exists at all and the hub now lives at `pages/puzzles/hub/PuzzleHubPage.tsx` (see "Puzzles routing" above for how desktop merges hub+solver into one component).
 
 Key shape notes that affect cross-feature work:
 - **Bundled catalog.** `data/daily.json` + `data/themes.json` are imported eagerly by `api/catalog.ts` (inside the lazy puzzles chunk). The per-tier `data/catalog/{tier}.json` files are dynamic-imported via `loadTier(tier)` so each tier is its own chunk and the user only pays for the tiers they pick. Built by `scripts/build-catalog.ts` from the Lichess CSV (`SAMPLES_PER_TIER = 2000` → ~10K bundled puzzles total); do **not** hand-edit them. The build script also bakes `themeDifficulties` and `themeCountsByTier` into `themes.json` so `getThemeDifficulty`/`countByTheme` stay synchronous despite tier data being lazy.

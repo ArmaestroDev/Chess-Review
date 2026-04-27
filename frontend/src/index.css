@@ -625,3 +625,65 @@ body {
   }
 }
 
+/* Captured-pieces inline row, sits next to a player's name in the strip.
+   Glyphs are tightly packed; the +N material badge uses tabular figures so
+   the row doesn't reflow when material swings between e.g. +9 and +10. */
+.cr-captured {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+  color: rgb(var(--ink-3));
+}
+.cr-captured-glyphs {
+  display: inline-block;
+  letter-spacing: -0.18em;
+  padding-right: 0.18em;
+  white-space: nowrap;
+}
+.cr-captured-advantage {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(var(--ink-2));
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile review "back to start" affordance shown above the board when the
+   user is in analyze mode and the bottom nav is hidden. Mirrors the desktop
+   .pz-hub-slot--back style at a slightly larger tap target. */
+.cr-mobile-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--ink-2));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.cr-mobile-back-link:hover {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+
+/* Mobile review analyze-mode: page must fit the viewport without scrolling.
+   `cr-mobile-main--fit` strips the auto scroll + bottom-padding-for-MobileNav
+   that the default cr-mobile-main supplies (the bottom nav is hidden in
+   analyze mode anyway). `cr-mobile-page--tight` shrinks the inter-section
+   gap so the board has more room. */
+.cr-mobile-main--fit {
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.cr-mobile-page--tight {
+  gap: 6px;
+  padding: 6px 10px;
+}
+
