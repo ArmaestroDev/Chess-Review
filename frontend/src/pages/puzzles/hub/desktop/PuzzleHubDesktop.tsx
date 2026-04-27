@@ -29,7 +29,8 @@ import {
 import { useElo } from '../../../../features/puzzles/hooks/useElo';
 import { usePuzzleSession } from '../../../../features/puzzles/hooks/usePuzzleSession';
 import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
-import { pickRespectingFilters } from '../../../../features/puzzles/utils/filters';
+import { pickFromMultiSelect } from '../../../../features/puzzles/api/catalog';
+import { useHubFilters } from '../../../../features/puzzles/hooks/useHubFilters';
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import type { Puzzle } from '../../../../features/puzzles/types';
 import type { Settings } from '../../../../shared/utils/settings';
@@ -51,6 +52,7 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
   const { progress } = useElo();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filters = useHubFilters({ defaultTier: classifyTier(progress.elo) });
 
   // Same-component routing means the openCalendar handoff fires here too.
   useEffect(() => {
@@ -167,16 +169,24 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
   }, [navigate, dailyPuzzle.id]);
 
   const handleQuickStart = useCallback(async () => {
+    if (!filters.ready) return;
     try {
-      const pick = await pickRespectingFilters({
-        fallbackTier: classifyTier(progress.elo),
+      const pick = await pickFromMultiSelect({
+        tiers: Array.from(filters.selectedTiers),
+        themes: Array.from(filters.selectedThemes),
         excludeIds: progress.lastSeenPuzzleIds,
       });
       if (pick) navigate(`/puzzles/${pick.id}`);
     } catch (err) {
       console.warn('quickstart pick failed', err);
     }
-  }, [navigate, progress.elo, progress.lastSeenPuzzleIds]);
+  }, [
+    filters.ready,
+    filters.selectedTiers,
+    filters.selectedThemes,
+    navigate,
+    progress.lastSeenPuzzleIds,
+  ]);
 
   const handleReplay = useCallback(
     (puzzleId: string) => navigate(`/puzzles/${puzzleId}`),
@@ -191,13 +201,25 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
       navigate('/puzzles', { state: { openCalendar: true } });
       return;
     }
-    const pick = await pickRespectingFilters({
-      fallbackTier: classifyTier(puzzle.rating),
+    if (!filters.ready) {
+      navigate('/puzzles');
+      return;
+    }
+    const pick = await pickFromMultiSelect({
+      tiers: Array.from(filters.selectedTiers),
+      themes: Array.from(filters.selectedThemes),
       excludeIds: progress.lastSeenPuzzleIds,
     });
     if (pick) navigate(`/puzzles/${pick.id}`);
     else navigate('/puzzles');
-  }, [puzzle, progress.lastSeenPuzzleIds, navigate]);
+  }, [
+    puzzle,
+    filters.ready,
+    filters.selectedTiers,
+    filters.selectedThemes,
+    progress.lastSeenPuzzleIds,
+    navigate,
+  ]);
 
   const handleRetry = useCallback(() => {
     if (!puzzle) return;
@@ -349,6 +371,7 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
                 <button
                   type="button"
                   onClick={handleQuickStart}
+                  disabled={!filters.ready}
                   className="pz-hero-cta w-full"
                 >
                   <Play size={16} />
@@ -367,8 +390,8 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
             </div>
             {filtersOpen && (
               <PuzzleFilters
+                filters={filters}
                 excludeIds={progress.lastSeenPuzzleIds}
-                defaultTier={classifyTier(progress.elo)}
               />
             )}
           </>

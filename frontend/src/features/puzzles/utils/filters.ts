@@ -4,7 +4,7 @@
 // instead of just sitting in localStorage.
 
 import type { Puzzle, Tier } from '../types';
-import { THEMES, pickFromCatalog, pickFromMultiSelect } from '../api/catalog';
+import { THEMES, pickFromMultiSelect } from '../api/catalog';
 import { ALL_TIERS } from './difficulty';
 
 const STORAGE_KEY = 'chess-engine-puzzle-filters';
@@ -71,29 +71,21 @@ export function savePersistedFilters(f: PersistedFilters): void {
   }
 }
 
-// Picks a puzzle that respects the user's persisted filters when both tiers
-// AND themes are non-empty. Falls back to fallbackTier (then 'medium') when
-// filters are absent or only partially configured — that's the "fresh user
-// hasn't opened the panel" path. Returns null when filters are set but yield
-// zero matches; the caller decides what to do (PuzzleFilters renders an
-// inline empty-match hint elsewhere).
+// Picks a puzzle that respects the user's persisted filters. Returns null
+// whenever filters are missing, empty, or yield zero matches — callers are
+// responsible for keeping the user inside the filter (e.g. bouncing back to
+// the hub). No tier-based fallback: per product requirement, only puzzles
+// the user explicitly selected should ever load.
 export async function pickRespectingFilters(opts: {
-  fallbackTier: Tier;
   excludeIds: ReadonlyArray<string>;
 }): Promise<Puzzle | null> {
   const filters = loadPersistedFilters();
-  if (filters && filters.tiers.length > 0 && filters.themes.length > 0) {
-    return pickFromMultiSelect({
-      tiers: filters.tiers,
-      themes: filters.themes,
-      excludeIds: opts.excludeIds,
-    });
+  if (!filters || filters.tiers.length === 0 || filters.themes.length === 0) {
+    return null;
   }
-  const primary = await pickFromCatalog(opts.fallbackTier, {
+  return pickFromMultiSelect({
+    tiers: filters.tiers,
+    themes: filters.themes,
     excludeIds: opts.excludeIds,
   });
-  return (
-    primary ??
-    (await pickFromCatalog('medium', { excludeIds: opts.excludeIds }))
-  );
 }

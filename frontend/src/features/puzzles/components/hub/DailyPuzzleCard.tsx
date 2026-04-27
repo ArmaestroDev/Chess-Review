@@ -63,7 +63,7 @@ export function DailyPuzzleCard({
               {prettyTheme(tag)}
             </span>
           ))}
-          <span className="cr-pill cr-pill-mono">★ {puzzle.rating}</span>
+          <span className="cr-pill">★ {puzzle.rating}</span>
           <span className="pz-daily-solvers">
             {t('puzzles.hub.daily.solvers', {
               value: puzzle.nbPlays.toLocaleString(localeForCount(i18n.language)),

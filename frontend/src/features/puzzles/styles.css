@@ -291,16 +291,21 @@
 
 /* Three-column layout, mirroring ReviewDesktop: left + center board + right.
    The fixed track widths must stay in sync with PuzzleHubDesktop's board
-   sizing formula (leftCol=320, rightCol=360). */
+   sizing formula (leftCol=320, rightCol=360).
+   `flex-1 min-h-0 overflow-hidden` + `grid-template-rows: 1fr` makes the
+   grid fill the remaining viewport (AppLayout is `h-screen overflow-hidden`)
+   and stretches columns to that height so flex-children inside (the filter
+   panel) can `flex-1 min-h-0` and scroll internally. */
 .pz-hub-grid {
-  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start;
+  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-stretch flex-1 min-h-0 overflow-hidden;
   grid-template-columns: 320px minmax(0, 1fr) 360px;
+  grid-template-rows: 1fr;
 }
 .pz-hub-col {
-  @apply flex flex-col gap-4 min-w-0;
+  @apply flex flex-col gap-4 min-w-0 min-h-0 overflow-hidden;
 }
 .pz-hub-center {
-  @apply flex justify-center min-w-0;
+  @apply flex justify-center min-w-0 min-h-0;
 }
 
 /* Thin row sitting above the left-column panels. Same height in both states
@@ -362,7 +367,7 @@
   color: rgb(var(--accent-default));
 }
 .pz-daily-title {
-  @apply font-serif text-[22px] font-semibold leading-[1.2] tracking-[-0.015em];
+  @apply text-[22px] font-semibold leading-[1.2] tracking-[-0.015em];
   color: rgb(var(--ink-default));
   text-wrap: balance;
 }

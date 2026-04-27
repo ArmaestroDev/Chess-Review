@@ -57,6 +57,33 @@ export function isDailyPuzzleId(id: string): boolean {
   return DAILY_ID_SET.has(id);
 }
 
+/**
+ * Reverse mapping: given a daily puzzle id, the yyyy-mm-dd (UTC) of the most
+ * recent date <= today whose `puzzleIdForDate` resolves to it. Returns null
+ * if `id` is not in the daily catalog. Used to attribute a calendar-replayed
+ * solve to the cell the user actually clicked, rather than to "today".
+ */
+export function dateKeyForDailyPuzzle(id: string): string | null {
+  const idx = ENTRIES.findIndex((e) => e.id === id);
+  if (idx < 0) return null;
+  const now = new Date();
+  const todayUtcMs = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+  const todayEpoch = Math.floor(todayUtcMs / MS_PER_DAY);
+  const N = ENTRIES.length;
+  const offset = (((todayEpoch - idx) % N) + N) % N;
+  const targetEpoch = todayEpoch - offset;
+  const d = new Date(targetEpoch * MS_PER_DAY);
+  return [
+    d.getUTCFullYear(),
+    String(d.getUTCMonth() + 1).padStart(2, '0'),
+    String(d.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+}
+
 export function useDailyPuzzle(): UseDailyPuzzleApi {
   return useMemo(() => {
     const date = todayDateKey();

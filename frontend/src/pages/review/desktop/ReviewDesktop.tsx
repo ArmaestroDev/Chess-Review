@@ -60,7 +60,10 @@ export function ReviewDesktop({
 
   return (
     <>
-      <main className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full">
+      <main
+        className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full flex-1 min-h-0 overflow-hidden items-stretch"
+        style={{ gridTemplateRows: '1fr' }}
+      >
         {/* LEFT — back/greeting slot + moves OR chess.com stats (fills column) */}
         <div className="flex flex-col gap-3 min-w-0 min-h-0">
           {review.hasGame ? (
@@ -151,7 +154,7 @@ export function ReviewDesktop({
         </div>
 
         {/* RIGHT — source / coach / accuracy / chart */}
-        <div className="flex flex-col gap-4 min-w-0">
+        <div className="flex flex-col gap-4 min-w-0 min-h-0 overflow-y-auto scrollbar-thin">
           {review.showLoader ? (
             <PgnLoader
               onAnalyze={review.handleAnalyze}

@@ -10,7 +10,8 @@ import { PuzzleFilters } from '../../../../features/puzzles/components/hub/Puzzl
 import { DailyCalendarModal } from '../../../../features/puzzles/components/hub/DailyCalendarModal';
 import { useDailyPuzzle } from '../../../../features/puzzles/hooks/useDailyPuzzle';
 import { useElo } from '../../../../features/puzzles/hooks/useElo';
-import { pickRespectingFilters } from '../../../../features/puzzles/utils/filters';
+import { useHubFilters } from '../../../../features/puzzles/hooks/useHubFilters';
+import { pickFromMultiSelect } from '../../../../features/puzzles/api/catalog';
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import { usePublishMobileTopBarActions } from '../../../../shared/components/MobileTopBarContext';
 
@@ -22,6 +23,7 @@ export function PuzzleHubMobile() {
   const { progress } = useElo();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filters = useHubFilters({ defaultTier: classifyTier(progress.elo) });
 
   // Hub has no flip/clear targets — explicitly null so a stale solver action
   // doesn't linger in the topbar after navigating back here.
@@ -46,16 +48,24 @@ export function PuzzleHubMobile() {
   );
 
   const handleQuickStart = useCallback(async () => {
+    if (!filters.ready) return;
     try {
-      const pick = await pickRespectingFilters({
-        fallbackTier: classifyTier(progress.elo),
+      const pick = await pickFromMultiSelect({
+        tiers: Array.from(filters.selectedTiers),
+        themes: Array.from(filters.selectedThemes),
         excludeIds: progress.lastSeenPuzzleIds,
       });
       if (pick) navigate(`/puzzles/${pick.id}`);
     } catch (err) {
       console.warn('quickstart pick failed', err);
     }
-  }, [navigate, progress.elo, progress.lastSeenPuzzleIds]);
+  }, [
+    filters.ready,
+    filters.selectedTiers,
+    filters.selectedThemes,
+    navigate,
+    progress.lastSeenPuzzleIds,
+  ]);
 
   return (
     <main className="cr-mobile-main">
@@ -72,6 +82,7 @@ export function PuzzleHubMobile() {
             <button
               type="button"
               onClick={handleQuickStart}
+              disabled={!filters.ready}
               className="pz-hero-cta w-full"
             >
               <Play size={16} />
@@ -90,8 +101,8 @@ export function PuzzleHubMobile() {
         </div>
         {filtersOpen && (
           <PuzzleFilters
+            filters={filters}
             excludeIds={progress.lastSeenPuzzleIds}
-            defaultTier={classifyTier(progress.elo)}
           />
         )}
 

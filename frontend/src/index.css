@@ -498,8 +498,13 @@ body {
 }
 
 /* Mobile main content needs bottom padding so the fixed nav doesn't
-   occlude the last card. 56px tab height + safe-area padding. */
+   occlude the last card. 56px tab height + safe-area padding.
+   AppLayout pins the page to viewport height, so mobile mains scroll
+   internally rather than letting the body grow. */
 .cr-mobile-main {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0));
 }
 

@@ -147,6 +147,13 @@ export function useReviewState({ orientation, setOrientation }: ReviewStateOptio
   const currentNode = tree.nodes[currentNodeId];
   const currentMove = currentNode?.move ?? null;
   const isPending = currentNode?.pending === true;
+  // Parent move — used by the eval bar while the current node is pending,
+  // so the bar holds at the position the user moved FROM (e.g. +1.0)
+  // instead of dropping to 0.0 during the analyzeMove round-trip.
+  const parentNode = currentNode?.parentId
+    ? tree.nodes[currentNode.parentId]
+    : null;
+  const parentMove = parentNode?.move ?? null;
 
   // ---- When analysis completes, seed currentLine to the full mainline ---
 
@@ -342,11 +349,34 @@ export function useReviewState({ orientation, setOrientation }: ReviewStateOptio
       ? currentMove.fenAfter
       : STARTING_FEN;
 
+  // Latest analyzed move on the mainline. During streaming the cursor sits
+  // at the root (CLAUDE.md: cursor doesn't auto-advance), so without this
+  // fallback the eval bar would pin at 0.0 the entire analysis. We let the
+  // bar track the tail instead — each new `progress` event extends the
+  // mainline, tailMove updates, and the EvalBar's CSS height transition
+  // smoothly moves the slab to the new value.
+  const tailMove = useMemo<MoveAnalysis | null>(() => {
+    let cur = tree.nodes[tree.rootId];
+    let last: MoveAnalysis | null = null;
+    while (cur) {
+      if (cur.move) last = cur.move;
+      const nextId = cur.childrenIds[0];
+      if (!nextId) break;
+      cur = tree.nodes[nextId];
+      if (!cur) break;
+    }
+    return last;
+  }, [tree]);
+
   const evalForBar = previewBest
     ? currentMove!.evalBeforeWhite
     : currentMove && !isPending
       ? currentMove.evalAfterWhite
-      : { cp: 0 };
+      : isPending
+        ? parentMove?.evalAfterWhite ?? { cp: 0 }
+        : status === 'analyzing' && tailMove
+          ? tailMove.evalAfterWhite
+          : { cp: 0 };
 
   const highlights = useMemo(() => {
     if (!currentMove) return [];

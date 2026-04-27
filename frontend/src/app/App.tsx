@@ -99,7 +99,7 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen wood-bg flex flex-col">
+    <div className="h-screen wood-bg flex flex-col overflow-hidden">
       {isMobile ? (
         <header className="cr-mobile-topbar">
           <div className="flex items-center gap-2">

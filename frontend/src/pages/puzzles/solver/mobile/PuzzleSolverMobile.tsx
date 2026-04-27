@@ -62,7 +62,6 @@ export function PuzzleSolverMobile({ orientation, setOrientation }: Props) {
       return;
     }
     const pick = await pickRespectingFilters({
-      fallbackTier: classifyTier(puzzle.rating),
       excludeIds: progress.lastSeenPuzzleIds,
     });
     if (pick) navigate(`/puzzles/${pick.id}`);

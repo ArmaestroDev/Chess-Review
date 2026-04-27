@@ -23,7 +23,7 @@ import {
 } from '../../../shared/utils/sounds';
 import { ensureConnected, socket } from '../../../shared/socket';
 import { useElo } from './useElo';
-import { isDailyPuzzleId, todayDateKey } from './useDailyPuzzle';
+import { dateKeyForDailyPuzzle } from './useDailyPuzzle';
 
 const OPPONENT_REPLY_DELAY_MS = 400;
 const PUNISHER_FETCH_TIMEOUT_MS = 8000;
@@ -368,10 +368,10 @@ export function usePuzzleSession(
       timestamp: Date.now(),
     };
     // Daily puzzles are also indexed by date in dailyHistory so the calendar
-    // page can render solved/failed cells. Always anchored to "today" (UTC):
-    // even if the user replays a historical date via the calendar, the most
-    // useful semantic is "this is when I attempted it."
-    const dailyDateKey = isDailyPuzzleId(state.puzzle.id) ? todayDateKey() : null;
+    // page can render solved/failed cells. Anchored to the puzzle's own date
+    // (most recent UTC day <= today that resolves to this id) so calendar
+    // replays mark the cell the user actually clicked, not today.
+    const dailyDateKey = dateKeyForDailyPuzzle(state.puzzle.id);
     commitAttempt(attempt, dailyDateKey);
     dispatch({ type: 'commit-elo', delta, eloAfter });
 
