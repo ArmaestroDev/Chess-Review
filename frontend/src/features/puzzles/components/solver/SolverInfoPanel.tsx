@@ -30,15 +30,11 @@ export function SolverInfoPanel({ state, puzzle, userColor }: Props) {
           {state.kind === 'awaiting-user-move' ? (
             <span
               className={
-                'inline-flex items-center justify-center w-4 h-4 rounded-[4px] text-[12px] font-semibold border border-line-2 mt-0.5 shrink-0 ' +
-                (userColor === 'white'
-                  ? 'bg-stone-100 text-stone-900'
-                  : 'bg-stone-900 text-stone-100')
+                'inline-block w-4 h-4 rounded-[4px] border border-line-2 mt-0.5 shrink-0 ' +
+                (userColor === 'white' ? 'bg-stone-100' : 'bg-stone-900')
               }
               aria-hidden
-            >
-              {userColor === 'white' ? '♔' : '♚'}
-            </span>
+            />
           ) : (
             <span className="pz-prompt-bullet" />
           )}
