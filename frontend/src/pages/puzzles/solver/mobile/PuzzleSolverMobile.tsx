@@ -160,10 +160,10 @@ function PuzzleSolverMobileInner({
   useEffect(() => {
     function update() {
       const availW = Math.min(window.innerWidth - 20, 720);
-      // Chrome reserve: ~50 topbar + 8 page top padding + 26 meta row +
-      // 120 info panel + 36 preview nav + 16 solved footer + 56 action
-      // buttons + 40 gaps + 16 safe-area ≈ 368.
-      const availH = window.innerHeight - 368;
+      // Chrome reserve: ~50 topbar + 8 page top padding + 16 page bottom
+      // padding + 26 meta row + 120 info panel + 36 preview nav + 16 solved
+      // footer + 64 action buttons + 40 gaps + 16 safe-area ≈ 392.
+      const availH = window.innerHeight - 392;
       const size = Math.max(220, Math.min(availW, availH));
       setBoardSize(Math.floor(size));
     }
@@ -248,13 +248,21 @@ function PuzzleSolverMobileInner({
   return (
     <main
       className="cr-mobile-main"
-      style={{ overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
+      // Flex column so the inner page (flex: 1) actually fills the viewport
+      // height — without this, the page collapses to content height and the
+      // action row drifts up whenever the info panel is short.
+      style={{
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        paddingBottom: 'env(safe-area-inset-bottom, 0)',
+      }}
     >
       <div
         className="cr-mobile-page"
-        // No bottom padding so the action row hugs the safe-area edge — main
-        // already supplies the safe-area inset, so we don't double up.
-        style={{ gap: 8, padding: '8px 10px 0', flex: 1, minHeight: 0 }}
+        // 16px bottom padding gives the action row breathing room above the
+        // safe-area inset (which main already supplies).
+        style={{ gap: 8, padding: '8px 10px 16px', flex: 1, minHeight: 0 }}
       >
         {/* Top meta row */}
         <div className="flex items-center justify-between gap-3">
@@ -364,28 +372,28 @@ function PuzzleSolverMobileInner({
             supplies the inset, so no extra padding here). The "Next" action
             lives inside the result panel after a puzzle ends, so it's not
             duplicated here. */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={session.requestHint}
             disabled={!solving || session.state.kind !== 'awaiting-user-move'}
             className={
-              'h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border text-[14px] font-semibold transition-colors ' +
+              'h-16 inline-flex items-center justify-center gap-2.5 rounded-[14px] border text-[16px] font-semibold transition-colors ' +
               (hintActive
                 ? 'border-accent bg-accent-soft text-accent-ink'
                 : 'border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-45')
             }
           >
-            <Lightbulb size={20} />
+            <Lightbulb size={22} />
             {t('puzzles.solver.rail.hint')}
           </button>
           <button
             type="button"
             onClick={session.revealSolution}
             disabled={!solving}
-            className="h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border border-line bg-wood-card text-ink-2 text-[14px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
+            className="h-16 inline-flex items-center justify-center gap-2.5 rounded-[14px] border border-line bg-wood-card text-ink-2 text-[16px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
           >
-            <Eye size={20} />
+            <Eye size={22} />
             {t('puzzles.solver.rail.reveal')}
           </button>
         </div>

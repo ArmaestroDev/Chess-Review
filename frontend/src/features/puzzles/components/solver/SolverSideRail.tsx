@@ -25,7 +25,7 @@ export function SolverSideRail({ state, onHint, onReveal }: Props) {
         className={`pz-action-btn ${hintActive ? 'active' : ''}`}
         title={t('puzzles.solver.rail.hintTitle')}
       >
-        <Lightbulb size={16} />
+        <Lightbulb size={18} />
         <span>{t('puzzles.solver.rail.hint')}</span>
       </button>
 
@@ -36,7 +36,7 @@ export function SolverSideRail({ state, onHint, onReveal }: Props) {
         className="pz-action-btn"
         title={t('puzzles.solver.rail.revealTitle')}
       >
-        <Eye size={16} />
+        <Eye size={18} />
         <span>{t('puzzles.solver.rail.reveal')}</span>
       </button>
     </div>
