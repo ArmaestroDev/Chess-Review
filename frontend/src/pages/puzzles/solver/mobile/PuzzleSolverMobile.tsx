@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Eye, Lightbulb, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,11 +11,14 @@ import { usePuzzleSession } from '../../../../features/puzzles/hooks/usePuzzleSe
 import { PuzzleBoard } from '../../../../features/puzzles/components/solver/PuzzleBoard';
 import { SolverInfoPanel } from '../../../../features/puzzles/components/solver/SolverInfoPanel';
 import { PuzzleResultPanel } from '../../../../features/puzzles/components/solver/PuzzleResultPanel';
+import { applyUci } from '../../../../features/puzzles/utils/validateSolution';
 import {
   usePublishMobileTopBarActions,
   useHideMobileBottomNav,
 } from '../../../../shared/components/MobileTopBarContext';
 import type { Puzzle } from '../../../../features/puzzles/types';
+
+const PREVIEW_HIGHLIGHT = 'rgba(216, 181, 106, 0.32)';
 
 interface Props {
   orientation: 'white' | 'black';
@@ -149,18 +152,18 @@ function PuzzleSolverMobileInner({
 
   // Mobile board: fill available width, but also clamp by available height so
   // the board doesn't overflow on short viewports. Reserves are approximate
-  // (topbar, page padding, meta row, info panel, solved footer, action
-  // buttons, gaps, safe area) — we deliberately don't measure the DOM. The
-  // 220px floor prefers a shrunken board over vertical overflow on landscape
-  // phones / split screens.
+  // (topbar, page padding, meta row, info panel, preview nav, solved footer,
+  // action buttons, gaps, safe area) — we deliberately don't measure the DOM.
+  // The 220px floor prefers a shrunken board over vertical overflow on
+  // landscape phones / split screens.
   const [boardSize, setBoardSize] = useState(320);
   useEffect(() => {
     function update() {
       const availW = Math.min(window.innerWidth - 20, 720);
-      // Chrome reserve when bottom nav is hidden + buttons are bigger:
-      // ~50 topbar + 16 page padding + 26 meta row + 120 info panel +
-      // 16 solved footer + 56 bottom buttons + 40 gaps + 16 safe-area ≈ 340
-      const availH = window.innerHeight - 340;
+      // Chrome reserve: ~50 topbar + 8 page top padding + 26 meta row +
+      // 120 info panel + 36 preview nav + 16 solved footer + 56 action
+      // buttons + 40 gaps + 16 safe-area ≈ 368.
+      const availH = window.innerHeight - 368;
       const size = Math.max(220, Math.min(availW, availH));
       setBoardSize(Math.floor(size));
     }
@@ -168,6 +171,69 @@ function PuzzleSolverMobileInner({
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+
+  // ---- History preview --------------------------------------------------
+  // While solving, the user can step backward through the moves played so
+  // far to re-inspect the position (e.g. notice a captured piece they
+  // missed). The board is read-only while previewing; only the live solving
+  // position accepts pieces. Resets on every state transition / new puzzle.
+
+  const [previewIdx, setPreviewIdx] = useState<number | null>(null);
+
+  const liveIdx =
+    session.state.kind === 'awaiting-user-move'
+      ? session.state.nextMoveIdx
+      : null;
+
+  // Reset preview whenever the live solving position changes (new puzzle,
+  // user/opponent move played, retry from failure, etc.).
+  useEffect(() => {
+    setPreviewIdx(null);
+  }, [puzzle.id, liveIdx, session.state.kind]);
+
+  const previewFen = useMemo(() => {
+    if (previewIdx === null) return null;
+    let fen = puzzle.fen;
+    for (let i = 0; i < previewIdx; i++) {
+      const next = applyUci(fen, puzzle.moves[i]!);
+      if (!next) return fen;
+      fen = next;
+    }
+    return fen;
+  }, [previewIdx, puzzle]);
+
+  const previewHighlights = useMemo(() => {
+    if (previewIdx == null || previewIdx <= 0) return [];
+    const lastUci = puzzle.moves[previewIdx - 1];
+    if (!lastUci) return [];
+    return [
+      { square: lastUci.slice(0, 2), color: PREVIEW_HIGHLIGHT },
+      { square: lastUci.slice(2, 4), color: PREVIEW_HIGHLIGHT },
+    ];
+  }, [previewIdx, puzzle]);
+
+  const inPreview = previewIdx !== null;
+  const displayFen =
+    inPreview && previewFen ? previewFen : session.displayFen;
+  const boardHighlights = inPreview ? previewHighlights : session.highlights;
+
+  const canPreviewBack =
+    liveIdx !== null && (previewIdx ?? liveIdx) > 0;
+  const canPreviewForward = liveIdx !== null && previewIdx !== null;
+
+  const onPreviewBack = useCallback(() => {
+    if (liveIdx === null) return;
+    setPreviewIdx((p) => Math.max(0, (p ?? liveIdx) - 1));
+  }, [liveIdx]);
+
+  const onPreviewForward = useCallback(() => {
+    if (liveIdx === null) return;
+    setPreviewIdx((p) => {
+      if (p === null) return null;
+      const next = p + 1;
+      return next >= liveIdx ? null : next;
+    });
+  }, [liveIdx]);
 
   const isTerminal =
     session.state.kind === 'completed' ||
@@ -189,7 +255,9 @@ function PuzzleSolverMobileInner({
     >
       <div
         className="cr-mobile-page"
-        style={{ gap: 8, padding: '8px 10px', flex: 1, minHeight: 0 }}
+        // No bottom padding so the action row hugs the safe-area edge — main
+        // already supplies the safe-area inset, so we don't double up.
+        style={{ gap: 8, padding: '8px 10px 0', flex: 1, minHeight: 0 }}
       >
         {/* Top meta row */}
         <div className="flex items-center justify-between gap-3">
@@ -250,14 +318,44 @@ function PuzzleSolverMobileInner({
           >
             <PuzzleBoard
               state={session.state}
-              fen={session.displayFen}
+              fen={displayFen}
               size={boardSize}
               orientation={orientation}
               userColor={session.userColor}
-              highlights={session.highlights}
+              highlights={boardHighlights}
               onMove={session.submitMove}
+              frozen={inPreview}
             />
           </div>
+        </div>
+
+        {/* Preview navigation — step backward through the moves played so
+            far to re-inspect the position. Only enabled while solving; the
+            board stays read-only while previewing. */}
+        <div
+          className="grid grid-cols-2 gap-2"
+          aria-label={t('puzzles.solver.preview.label')}
+        >
+          <button
+            type="button"
+            onClick={onPreviewBack}
+            disabled={!canPreviewBack}
+            aria-label={t('puzzles.solver.preview.back')}
+            title={t('puzzles.solver.preview.back')}
+            className="h-9 inline-flex items-center justify-center rounded-[8px] border border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-40 transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={onPreviewForward}
+            disabled={!canPreviewForward}
+            aria-label={t('puzzles.solver.preview.forward')}
+            title={t('puzzles.solver.preview.forward')}
+            className="h-9 inline-flex items-center justify-center rounded-[8px] border border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-40 transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
 
         {/* Solved counter — small, above the action row */}
@@ -265,11 +363,9 @@ function PuzzleSolverMobileInner({
           {t('puzzles.solver.solved')}: {progress.stats.solved}
         </div>
 
-        {/* Bottom action row — bigger buttons replacing the hidden MobileNav */}
-        <div
-          className="grid grid-cols-3 gap-2"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
-        >
+        {/* Bottom action row — pinned to the safe-area edge (main already
+            supplies the inset, so no extra padding here). */}
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={session.requestHint}

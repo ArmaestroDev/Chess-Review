@@ -183,11 +183,9 @@
     "mobile": {
       "tabs": {
         "moves": "Züge",
-        "stats": "Statistik",
         "comment": "Kommentar"
       },
-      "noMoves": "Lade eine PGN, um Züge zu sehen, oder ziehe eine Figur, um eine freie Partie zu starten.",
-      "noStats": "Statistiken erscheinen nach Abschluss der Analyse."
+      "noMoves": "Lade eine PGN, um Züge zu sehen, oder ziehe eine Figur, um eine freie Partie zu starten."
     }
   },
   "classification": {
@@ -285,7 +283,7 @@
     },
     "solver": {
       "back": "Zur Übersicht",
-      "rating": "Wertung {{elo}}",
+      "rating": "Deine Wertung {{elo}}",
       "solved": "gelöst",
       "rail": {
         "hint": "Tipp",
@@ -336,6 +334,11 @@
         "title": "Aufgabe konnte nicht geladen werden",
         "notFound": "Aufgabe nicht gefunden.",
         "loadFailed": "Aufgabe konnte nicht geladen werden."
+      },
+      "preview": {
+        "label": "Verlauf anzeigen",
+        "back": "Einen Zug zurück",
+        "forward": "Einen Zug vor"
       }
     },
     "calendar": {

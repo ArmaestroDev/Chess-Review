@@ -11,6 +11,12 @@ interface Props {
   userColor: 'white' | 'black';
   highlights: { square: string; color?: string }[];
   onMove: (uci: string) => void;
+  /**
+   * When true, the board is read-only regardless of state. Used by the mobile
+   * solver's preview navigation so the user can step backward through the
+   * line without being able to play moves from a past position.
+   */
+  frozen?: boolean;
 }
 
 type Feedback = { tone: 'correct' | 'wrong'; text: string } | null;
@@ -24,6 +30,7 @@ export function PuzzleBoard({
   userColor,
   highlights,
   onMove,
+  frozen = false,
 }: Props) {
   const { t } = useTranslation();
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -53,7 +60,7 @@ export function PuzzleBoard({
     return () => window.clearTimeout(tm);
   }, [feedback]);
 
-  const playable = state.kind === 'awaiting-user-move';
+  const playable = !frozen && state.kind === 'awaiting-user-move';
   const playableColor: 'w' | 'b' = userColor === 'white' ? 'w' : 'b';
 
   return (

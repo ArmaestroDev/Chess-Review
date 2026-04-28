@@ -19,14 +19,12 @@ import {
 import { deriveStripCaptures } from '../../../shared/utils/capturedPieces';
 import type { ReviewState } from '../useReviewState';
 import type { ChessComProfileState } from '../useChessComProfile';
-import { GameMeta as GameMetaCard } from '../components/GameMeta';
 import { MovesCard } from '../components/MovesCard';
 import { PgnLoader } from '../components/PgnLoader';
 import { CommentBubble } from '../components/CommentBubble';
-import { AccuracyCard } from '../components/AccuracyCard';
 import { AnalyzingCard } from '../components/AnalyzingCard';
 
-type Tab = 'moves' | 'stats' | 'comment';
+type Tab = 'moves' | 'comment';
 
 interface Props {
   orientation: 'white' | 'black';
@@ -59,12 +57,10 @@ export function ReviewMobile({
   // flips back to false (e.g. after handleReset).
   useHideMobileBottomNav(review.hasGame);
 
-  // Switch the active tab when state-driven content becomes more relevant:
-  // - while a game is loading/analyzing, show the analyzing card under
-  //   "comment" so the user sees progress.
-  // - otherwise leave the user's choice alone.
+  // While a game is loading/analyzing, surface the analyzing card under
+  // "comment" so the user sees progress.
   useEffect(() => {
-    if (review.showAnalyzing && tab !== 'comment') setTab('comment');
+    if (review.showAnalyzing) setTab('comment');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [review.showAnalyzing]);
 
@@ -76,12 +72,14 @@ export function ReviewMobile({
   // Analyze mode: the page must fit the viewport without scrolling, so the
   // board has to be the smaller of (a) available width and (b) available
   // height after subtracting all fixed chrome. ANALYZE_CHROME_RESERVE_PX
-  // accounts for the topbar + back-link + tabs + 140px tab-content slot +
-  // top PlayerStrip + horizontal eval bar + bottom PlayerStrip + playback
-  // controls + page padding + the 6px gaps between sections. On very small
-  // viewports the board may shrink below the ideal size — that's the
-  // intentional trade-off for keeping the layout non-scrolling.
-  const ANALYZE_CHROME_RESERVE_PX = 528;
+  // accounts for the topbar + back-link + tabs + TAB_CONTENT_HEIGHT_PX
+  // tab-content slot + top PlayerStrip + horizontal eval bar + bottom
+  // PlayerStrip + playback controls + page padding + the 6px gaps between
+  // sections. On very small viewports the board may shrink below the ideal
+  // size — that's the intentional trade-off for keeping the layout
+  // non-scrolling.
+  const TAB_CONTENT_HEIGHT_PX = 108;
+  const ANALYZE_CHROME_RESERVE_PX = 496;
 
   const [boardSize, setBoardSize] = useState(320);
   useEffect(() => {
@@ -113,7 +111,7 @@ export function ReviewMobile({
 
   // Reset the active tab to "moves" when the user leaves analyze mode so the
   // next loaded game starts on the most-relevant tab instead of restoring a
-  // stale Stats / Comment selection from the previous session.
+  // stale Comment selection from the previous session.
   useEffect(() => {
     if (!review.hasGame) setTab('moves');
   }, [review.hasGame]);
@@ -182,7 +180,7 @@ export function ReviewMobile({
               {t('review.actions.backToStart')}
             </button>
 
-            {/* Tab strip — Moves / Stats / Comment */}
+            {/* Tab strip — Moves / Comment */}
             <div className="cr-mobile-tabs">
               <button
                 type="button"
@@ -192,15 +190,6 @@ export function ReviewMobile({
                 }
               >
                 {t('review.mobile.tabs.moves')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab('stats')}
-                className={
-                  'cr-mobile-tab ' + (tab === 'stats' ? 'cr-mobile-tab-active' : '')
-                }
-              >
-                {t('review.mobile.tabs.stats')}
               </button>
               <button
                 type="button"
@@ -214,12 +203,15 @@ export function ReviewMobile({
               </button>
             </div>
 
-            {/* Tab content — fixed 140px slot in analyze mode so the layout
-                is stable across moves/stats/comment. Each card scrolls
-                internally when its content exceeds the slot. The 140px is
+            {/* Tab content — fixed slot in analyze mode so the layout is
+                stable across moves/comment. Each card scrolls internally
+                when its content exceeds the slot. TAB_CONTENT_HEIGHT_PX is
                 paired with ANALYZE_CHROME_RESERVE_PX above; if you change
                 one, retune the other. */}
-            <div style={{ height: 140 }} className="flex flex-col min-h-0">
+            <div
+              style={{ height: TAB_CONTENT_HEIGHT_PX }}
+              className="flex flex-col min-h-0"
+            >
               {tab === 'moves' && (
                 <MovesCard
                   tree={review.tree}
@@ -237,15 +229,6 @@ export function ReviewMobile({
                   compact
                   fill
                 />
-              )}
-              {tab === 'stats' && (
-                <div className="overflow-y-auto flex flex-col gap-2 min-h-0">
-                  <GameMetaCard meta={review.meta} hasGame={review.hasGame} />
-                  <AccuracyCard
-                    whiteAccuracy={review.meta.whiteAccuracy}
-                    blackAccuracy={review.meta.blackAccuracy}
-                  />
-                </div>
               )}
               {tab === 'comment' && (
                 <div className="overflow-y-auto min-h-0">

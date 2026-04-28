@@ -61,6 +61,13 @@ export interface PuzzleProgress {
   dailyHistory: Record<string, PuzzleAttempt>;
   /** Recent puzzle IDs (cap ~500) so the random picker can avoid repeats. */
   lastSeenPuzzleIds: string[];
+  /**
+   * Puzzle IDs whose attempt has already counted toward ELO in this cycle.
+   * When a puzzle id is here, a re-attempt commits with delta=0. Hard-resets
+   * to [] once the list reaches 2000, so the user can re-earn points on
+   * previously seen puzzles after a long enough run.
+   */
+  scoredPuzzleIds: string[];
 }
 
 // ---- Solver state machine -------------------------------------------------

@@ -9,6 +9,12 @@ import { ELO_FLOOR, ELO_CEILING, STARTING_ELO } from './elo';
 const KEY = 'chess-engine-puzzles';
 const HISTORY_CAP = 500;
 const RECENT_IDS_CAP = 500;
+/**
+ * Hard-reset cycle for the no-rescore rule. After this many distinct scored
+ * puzzles, `scoredPuzzleIds` clears so previously-attempted puzzles can earn
+ * points again.
+ */
+export const SCORED_CYCLE_LIMIT = 2000;
 const SCHEMA_VERSION = 1;
 
 function makeDefault(): PuzzleProgress {
@@ -29,6 +35,7 @@ function makeDefault(): PuzzleProgress {
     },
     dailyHistory: {},
     lastSeenPuzzleIds: [],
+    scoredPuzzleIds: [],
   };
 }
 
@@ -57,6 +64,11 @@ export function loadProgress(): PuzzleProgress {
             -RECENT_IDS_CAP,
           )
         : def.lastSeenPuzzleIds,
+      scoredPuzzleIds: Array.isArray(parsed.scoredPuzzleIds)
+        ? parsed.scoredPuzzleIds
+            .filter((s) => typeof s === 'string')
+            .slice(-SCORED_CYCLE_LIMIT)
+        : def.scoredPuzzleIds,
     };
   } catch {
     return makeDefault();
@@ -131,6 +143,18 @@ export function appendAttempt(
     ? { ...progress.dailyHistory, [dailyDateKey]: attempt }
     : progress.dailyHistory;
 
+  // Cycle-bounded "already scored" set. New ids are appended; once the list
+  // would overflow SCORED_CYCLE_LIMIT, the cycle resets to a fresh list seeded
+  // with this attempt. Re-attempts of an id already present don't grow the
+  // list (the caller computes delta=0 in that case).
+  let scoredPuzzleIds = progress.scoredPuzzleIds;
+  if (!scoredPuzzleIds.includes(attempt.puzzleId)) {
+    scoredPuzzleIds =
+      scoredPuzzleIds.length >= SCORED_CYCLE_LIMIT
+        ? [attempt.puzzleId]
+        : [...scoredPuzzleIds, attempt.puzzleId];
+  }
+
   return {
     ...progress,
     elo: clampElo(attempt.eloAfter),
@@ -138,6 +162,7 @@ export function appendAttempt(
     stats,
     lastSeenPuzzleIds: lastSeen,
     dailyHistory,
+    scoredPuzzleIds,
   };
 }
 

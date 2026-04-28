@@ -183,11 +183,9 @@
     "mobile": {
       "tabs": {
         "moves": "Moves",
-        "stats": "Stats",
         "comment": "Comment"
       },
-      "noMoves": "Load a PGN to see moves here, or drag a piece to start a free-play game.",
-      "noStats": "Stats appear after analysis completes."
+      "noMoves": "Load a PGN to see moves here, or drag a piece to start a free-play game."
     }
   },
   "classification": {
@@ -285,7 +283,7 @@
     },
     "solver": {
       "back": "Back to hub",
-      "rating": "Rating {{elo}}",
+      "rating": "Your Rating {{elo}}",
       "solved": "solved",
       "rail": {
         "hint": "Hint",
@@ -336,6 +334,11 @@
         "title": "Couldn't load puzzle",
         "notFound": "Puzzle not found.",
         "loadFailed": "Failed to load puzzle."
+      },
+      "preview": {
+        "label": "Preview history",
+        "back": "Back one move",
+        "forward": "Forward one move"
       }
     },
     "calendar": {

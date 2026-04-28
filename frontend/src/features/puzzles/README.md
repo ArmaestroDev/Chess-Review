@@ -133,9 +133,20 @@ so a corrupt settings blob doesn't nuke puzzle progress).
     byTier: { beginner: { solved, failed }, ... }
   },
   dailyHistory: { [yyyy-mm-dd]: PuzzleAttempt },
-  lastSeenPuzzleIds: string[]
+  lastSeenPuzzleIds: string[],
+  scoredPuzzleIds: string[]   // ids that already counted toward ELO
 }
 ```
+
+### No-rescore rule
+
+`scoredPuzzleIds` tracks every puzzle id whose attempt has already moved the
+user's ELO. A second attempt of the same id commits with `delta = 0` (still
+recorded in `history`; ELO unchanged). Once the list reaches
+`SCORED_CYCLE_LIMIT = 2000` distinct ids, the next new attempt clears it back
+to `[id]` so the user can re-earn points on previously seen puzzles. The
+delta=0 decision lives in `usePuzzleSession`'s commit-elo effect; the cycle
+reset lives in `appendAttempt` (`utils/puzzleProgress.ts`).
 
 ## Backend proxy
 

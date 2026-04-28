@@ -229,7 +229,7 @@ export function usePuzzleSession(
   initialPuzzle: Puzzle | null,
 ): UsePuzzleSessionApi {
   const [state, dispatch] = useReducer(reducer, { kind: 'idle' } as SessionState);
-  const { elo, commitAttempt } = useElo();
+  const { elo, progress, commitAttempt } = useElo();
 
   // Track the puzzle id whose ELO has already been committed in this
   // session. Used to short-circuit:
@@ -354,7 +354,14 @@ export function usePuzzleSession(
           : state.hintUsed
             ? 'hint'
             : 'fail';
-    const delta = computeDelta(result, state.puzzle.rating, elo);
+    // No-rescore rule: if this puzzle id has already counted toward ELO this
+    // cycle, the second attempt commits with delta=0 (still recorded in
+    // history; ELO unchanged). The cycle resets at SCORED_CYCLE_LIMIT in
+    // appendAttempt.
+    const alreadyScored = progress.scoredPuzzleIds.includes(state.puzzle.id);
+    const delta = alreadyScored
+      ? 0
+      : computeDelta(result, state.puzzle.rating, elo);
     const eloAfter = applyDelta(elo, delta);
 
     const attempt: PuzzleAttempt = {
@@ -380,7 +387,7 @@ export function usePuzzleSession(
     playSound(
       state.kind === 'completed' && state.result === 'solve' ? 'check' : 'error',
     );
-  }, [state, elo, commitAttempt]);
+  }, [state, elo, progress, commitAttempt]);
 
   // Reveal animation: tick through the remaining solution moves at a
   // human-readable pace, playing each move's sound as it animates.
