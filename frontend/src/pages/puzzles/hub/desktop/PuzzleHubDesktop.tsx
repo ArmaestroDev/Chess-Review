@@ -370,7 +370,6 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
                   state={session.state}
                   onHint={session.requestHint}
                   onReveal={session.revealSolution}
-                  onNext={handleNext}
                 />
               </div>
             )}

@@ -283,7 +283,7 @@
     },
     "solver": {
       "back": "Back to hub",
-      "rating": "Your Rating {{elo}}",
+      "rating": "Your Rating · {{elo}}",
       "solved": "solved",
       "rail": {
         "hint": "Hint",

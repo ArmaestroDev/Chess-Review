@@ -283,7 +283,7 @@
     },
     "solver": {
       "back": "Zur Übersicht",
-      "rating": "Deine Wertung {{elo}}",
+      "rating": "Deine Wertung · {{elo}}",
       "solved": "gelöst",
       "rail": {
         "hint": "Tipp",

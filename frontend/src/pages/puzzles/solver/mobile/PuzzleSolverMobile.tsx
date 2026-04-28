@@ -239,9 +239,6 @@ function PuzzleSolverMobileInner({
     session.state.kind === 'completed' ||
     session.state.kind === 'failed' ||
     session.state.kind === 'revealing';
-  const punisherPending =
-    session.state.kind === 'failed' &&
-    session.state.punisherStatus === 'fetching';
   const solving =
     session.state.kind === 'awaiting-user-move' ||
     session.state.kind === 'animating-opponent-reply';
@@ -364,8 +361,10 @@ function PuzzleSolverMobileInner({
         </div>
 
         {/* Bottom action row — pinned to the safe-area edge (main already
-            supplies the inset, so no extra padding here). */}
-        <div className="grid grid-cols-3 gap-2">
+            supplies the inset, so no extra padding here). The "Next" action
+            lives inside the result panel after a puzzle ends, so it's not
+            duplicated here. */}
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={session.requestHint}
@@ -388,15 +387,6 @@ function PuzzleSolverMobileInner({
           >
             <Eye size={20} />
             {t('puzzles.solver.rail.reveal')}
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!isTerminal || punisherPending}
-            className="h-14 inline-flex items-center justify-center gap-2 rounded-[12px] border border-line bg-wood-card text-ink-2 text-[14px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
-          >
-            {t('puzzles.solver.rail.next')}
-            <ChevronRight size={20} />
           </button>
         </div>
       </div>
