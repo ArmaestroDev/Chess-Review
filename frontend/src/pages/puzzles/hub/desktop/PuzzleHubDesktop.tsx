@@ -33,6 +33,7 @@ import { useHubFilters } from '../../../../features/puzzles/hooks/useHubFilters'
 import { classifyTier } from '../../../../features/puzzles/utils/difficulty';
 import { useChessComProfile } from '../../../review/useChessComProfile';
 import { ChessComStatsCard } from '../../../review/components/ChessComStatsCard';
+import { useBoardSize } from '../../../../shared/utils/layout';
 import type { Puzzle } from '../../../../features/puzzles/types';
 import type { Settings } from '../../../../shared/utils/settings';
 
@@ -67,27 +68,10 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
     }
   }, [location, navigate]);
 
-  // Centerpiece board sizing — mirrors ReviewDesktop's formula minus the
-  // eval-bar gap. The board lives in the middle (1fr) track; the leftCol +
-  // rightCol widths must stay in sync with the .pz-hub-grid template. Cap
-  // raised to 840 so wider screens can render a larger board.
-  const [boardSize, setBoardSize] = useState(560);
-  useEffect(() => {
-    function update() {
-      const leftCol = 320;
-      const rightCol = 360;
-      const gaps = 40;
-      const horizPad = 56;
-      const usableW = Math.min(window.innerWidth, 1600);
-      const availW = usableW - leftCol - rightCol - gaps - horizPad;
-      const availH = window.innerHeight - 64 - 120 - 40;
-      const size = Math.max(320, Math.min(availW, availH, 840));
-      setBoardSize(Math.floor(size));
-    }
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
+  // Centerpiece board size from the centralized layout module (single source
+  // of truth — its formula + the .pz-hub-grid column vars can no longer
+  // drift). `false` = no eval-bar gap on the hub. See shared/utils/layout.ts.
+  const boardSize = useBoardSize(false);
 
   // Solver-mode puzzle loading. Null in hub mode (id undefined).
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);

@@ -17,7 +17,7 @@ export function Header({
   const { t } = useTranslation();
   return (
     <header className="cr-header sticky top-0 z-10 px-7 py-3.5">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center max-w-[1600px] mx-auto w-full">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center max-w-[var(--lyt-maxw)] mx-auto w-full">
         <div className="flex items-center gap-2.5">
           <div
             className="w-[34px] h-[34px] rounded-[9px]"

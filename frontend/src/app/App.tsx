@@ -27,6 +27,7 @@ import {
 } from '../shared/utils/settings';
 import { isMuted, setMuted } from '../shared/utils/sounds';
 import { IsMobileProvider, useIsMobileContext } from '../hooks/useIsMobile';
+import { useUiCanvas, canvasStyle } from '../shared/utils/layout';
 
 // Lazy-load the entire puzzles feature. Review-only users never download the
 // 90 KB daily catalog + ~115 KB-each tier JSONs; they're code-split into a
@@ -40,7 +41,7 @@ const PuzzleHubPage = lazy(() =>
 function PuzzlesFallback() {
   const { t } = useTranslation();
   return (
-    <main className="max-w-[1600px] mx-auto w-full px-7 py-10">
+    <main className="max-w-[var(--lyt-maxw)] mx-auto w-full px-7 py-10">
       <div className="flex items-center justify-center gap-2 text-ink-3 text-[13px]">
         <Loader2 size={16} className="animate-spin" />
         {t('loading.puzzles')}
@@ -71,6 +72,12 @@ function AppLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const isMobile = useIsMobileContext();
   const mobileTopBar = useMobileTopBar();
+  // Single source of truth for desktop scaling — see shared/utils/layout.ts.
+  // On desktop the whole header+routes shell is rendered into a uniformly
+  // `zoom`-scaled "design canvas" so the fixed-px layout fits any effective
+  // viewport (i.e. any browser zoom). On mobile this is a no-op pass-through.
+  const canvas = useUiCanvas(isMobile);
+  const shellStyle = canvasStyle(canvas, isMobile);
 
   useEffect(() => {
     applyTheme(settings.theme, settings.mode);
@@ -100,8 +107,17 @@ function AppLayout() {
 
   return (
     <div className="h-screen wood-bg flex flex-col overflow-hidden">
-      {isMobile ? (
-        <header className="cr-mobile-topbar">
+      {/* Desktop: a uniformly zoom-scaled design canvas (header + routes)
+          sized to exactly cover the viewport. Mobile: `contents` makes this
+          wrapper vanish so the fluid mobile layout is byte-identical to
+          before. SettingsModal stays OUTSIDE — modals are viewport-fixed and
+          must not be zoomed. */}
+      <div
+        className={isMobile ? 'contents' : 'flex flex-col'}
+        style={shellStyle}
+      >
+        {isMobile ? (
+          <header className="cr-mobile-topbar">
           <div className="flex items-center gap-2">
             <div
               className="w-[28px] h-[28px] rounded-[7px]"
@@ -201,9 +217,10 @@ function AppLayout() {
         />
       </Routes>
 
-      {isMobile && !mobileTopBar.hideBottomNav && (
-        <MobileNav onOpenSettings={() => setSettingsOpen(true)} />
-      )}
+        {isMobile && !mobileTopBar.hideBottomNav && (
+          <MobileNav onOpenSettings={() => setSettingsOpen(true)} />
+        )}
+      </div>
 
       <SettingsModal
         open={settingsOpen}

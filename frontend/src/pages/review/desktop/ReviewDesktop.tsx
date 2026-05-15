@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowUpDown } from 'lucide-react';
 import { Board } from '../../../shared/components/Board';
@@ -17,6 +17,7 @@ import { mainlineNodeIdForPly } from '../useReviewState';
 import type { ReviewState } from '../useReviewState';
 import type { ChessComProfileState } from '../useChessComProfile';
 import { deriveStripCaptures } from '../../../shared/utils/capturedPieces';
+import { useBoardSize } from '../../../shared/utils/layout';
 
 interface Props {
   settings: AppSettings;
@@ -38,26 +39,10 @@ export function ReviewDesktop({
   const { t } = useTranslation();
   const flipBoard = () => setOrientation(orientation === 'white' ? 'black' : 'white');
 
-  // ---- Responsive board sizing (desktop layout: fixed left/right cols) --
-
-  const [boardSize, setBoardSize] = useState(560);
-  useEffect(() => {
-    function update() {
-      const leftCol = 320;
-      const rightCol = 360;
-      const gaps = 40;
-      const horizPad = 56;
-      const evalGap = 32;
-      const usableW = Math.min(window.innerWidth, 1600);
-      const availW = usableW - leftCol - rightCol - gaps - horizPad - evalGap;
-      const availH = window.innerHeight - 64 - 120 - 40;
-      const size = Math.max(320, Math.min(availW, availH, 720));
-      setBoardSize(Math.floor(size));
-    }
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
+  // Board size comes from the centralized layout module (single source of
+  // truth). `true` = this layout has the slim eval-bar column to the board's
+  // left, so the formula subtracts that gap. See shared/utils/layout.ts.
+  const boardSize = useBoardSize(true);
 
   // Captured pieces / material advantage derived from the displayed FEN.
   // Recomputed only when displayedFen or strip orientation changes.
@@ -71,7 +56,7 @@ export function ReviewDesktop({
   return (
     <>
       <main
-        className="grid grid-cols-[320px_minmax(0,1fr)_360px] gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full flex-1 min-h-0 overflow-hidden items-stretch"
+        className="grid grid-cols-[var(--lyt-col-left)_minmax(0,1fr)_var(--lyt-col-right)] gap-[var(--lyt-gap)] px-[var(--lyt-pad-x)] py-5 max-w-[var(--lyt-maxw)] mx-auto w-full flex-1 min-h-0 overflow-hidden items-stretch"
         style={{ gridTemplateRows: '1fr' }}
       >
         {/* LEFT — back/greeting slot + moves OR chess.com stats (fills column) */}

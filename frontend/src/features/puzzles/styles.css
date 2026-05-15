@@ -9,7 +9,10 @@
 /* ─── Solver shell ──────────────────────────────────────────── */
 
 .pz-solver {
-  @apply flex flex-col gap-4 px-7 py-4 max-w-[1600px] mx-auto w-full;
+  @apply flex flex-col gap-4 py-4 mx-auto w-full;
+  padding-left: var(--lyt-pad-x);
+  padding-right: var(--lyt-pad-x);
+  max-width: var(--lyt-maxw);
 }
 
 .pz-solver-top {
@@ -64,7 +67,7 @@
 
 .pz-solver-grid {
   @apply grid gap-4 items-start;
-  grid-template-columns: 56px minmax(0, 1fr) 360px;
+  grid-template-columns: 56px minmax(0, 1fr) var(--lyt-col-right);
 }
 
 /* ─── Solver action bar (horizontal row of Hint / Reveal / Next) ──── */
@@ -290,16 +293,22 @@
 /* ─── Hub layout ───────────────────────────────────────────── */
 
 /* Three-column layout: left info column + center board + right info column.
-   The fixed track widths must stay in sync with PuzzleHubDesktop's board
-   sizing formula (leftCol=320, rightCol=360). The board lives in the middle
-   track ("1fr") so wider screens give more room to the board.
+   The track widths come from --lyt-col-left / --lyt-col-right, which are
+   written by shared/utils/layout.ts — the SAME source the board-sizing
+   formula reads, so the two can no longer drift (edit constants there only,
+   never hardcode column px here). The board lives in the middle track
+   ("1fr") so wider screens give more room to the board.
    `flex-1 min-h-0 overflow-hidden` + `grid-template-rows: 1fr` makes the
    grid fill the remaining viewport (AppLayout is `h-screen overflow-hidden`)
    and stretches columns to that height so flex-children inside can
    `flex-1 min-h-0` and scroll internally. */
 .pz-hub-grid {
-  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-stretch flex-1 min-h-0 overflow-hidden;
-  grid-template-columns: 320px minmax(0, 1fr) 360px;
+  @apply grid py-5 mx-auto w-full items-stretch flex-1 min-h-0 overflow-hidden;
+  gap: var(--lyt-gap);
+  padding-left: var(--lyt-pad-x);
+  padding-right: var(--lyt-pad-x);
+  max-width: var(--lyt-maxw);
+  grid-template-columns: var(--lyt-col-left) minmax(0, 1fr) var(--lyt-col-right);
   grid-template-rows: 1fr;
 }
 .pz-hub-col {
@@ -353,7 +362,10 @@
 
 /* Legacy two-column layout, retained for compatibility. */
 .pz-hub {
-  @apply grid gap-5 px-7 py-5 max-w-[1600px] mx-auto w-full items-start;
+  @apply grid gap-5 py-5 mx-auto w-full items-start;
+  padding-left: var(--lyt-pad-x);
+  padding-right: var(--lyt-pad-x);
+  max-width: var(--lyt-maxw);
   grid-template-columns: minmax(0, 1fr) 340px;
 }
 .pz-hub-l {
