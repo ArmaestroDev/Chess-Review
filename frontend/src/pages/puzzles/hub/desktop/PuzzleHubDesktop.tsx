@@ -19,6 +19,7 @@ import { PuzzleFiltersModal } from '../../../../features/puzzles/components/hub/
 import { DailyCalendarModal } from '../../../../features/puzzles/components/hub/DailyCalendarModal';
 import { SolverSideRail } from '../../../../features/puzzles/components/solver/SolverSideRail';
 import { SolverInfoPanel } from '../../../../features/puzzles/components/solver/SolverInfoPanel';
+import { SolverStakeCard } from '../../../../features/puzzles/components/solver/SolverStakeCard';
 import { PuzzleResultPanel } from '../../../../features/puzzles/components/solver/PuzzleResultPanel';
 import { PuzzleBoard } from '../../../../features/puzzles/components/solver/PuzzleBoard';
 import {
@@ -348,6 +349,13 @@ export function PuzzleHubDesktop({ settings, orientation, setOrientation }: Prop
               onNext={handleNext}
               onRetry={handleRetry}
             />
+            {puzzle && !solverError && (
+              <SolverStakeCard
+                puzzle={puzzle}
+                state={session.state}
+                progress={progress}
+              />
+            )}
             {puzzle && !solverError && (
               <div className="mt-auto">
                 <SolverSideRail

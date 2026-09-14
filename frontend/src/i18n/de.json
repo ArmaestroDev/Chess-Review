@@ -255,7 +255,11 @@
         "rating": "Aufgaben-Wertung",
         "streak": "Serie",
         "today": "Heute",
-        "accuracy": "Genauigkeit"
+        "accuracy": "Genauigkeit",
+        "todayDelta": "Wertungsänderung heute",
+        "streakPending": "Löse heute eine Aufgabe, um deine Serie zu halten",
+        "solved": "Heute gelöst",
+        "failed": "Heute verfehlt"
       },
       "activity": {
         "title": "Aktivität (7 Tage)",
@@ -285,6 +289,16 @@
       "back": "Zur Übersicht",
       "rating": "Deine Wertung · {{elo}}",
       "solved": "gelöst",
+      "stake": {
+        "title": "Wertung im Spiel",
+        "themes": "Themen",
+        "unrated": "Bereits gewertet",
+        "hinted": "Tipp genutzt",
+        "solve": "bei Lösung",
+        "miss": "bei Fehler",
+        "you": "Du {{elo}}",
+        "puzzle": "Aufgabe {{rating}}"
+      },
       "rail": {
         "hint": "Tipp",
         "hintTitle": "Tipp (3 Stufen — verzichtet auf ELO-Gewinn)",

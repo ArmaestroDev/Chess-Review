@@ -579,49 +579,175 @@
   color: rgb(var(--accent-default));
 }
 
+/* ─── Stat palette ────────────────────────────────────────── */
+
+/* Fixed semantic hues shared by the progress + stake cards. Kept as RGB
+   triplets so tints can be built with rgb(var(--x) / alpha). Light mode uses
+   deeper variants so text stays legible on the cream cards. */
+:root {
+  --pz-good: 134 191 44;
+  --pz-bad: 224 88 70;
+  --pz-fire: 240 138 60;
+  --pz-blue: 91 155 213;
+}
+.mode-light {
+  --pz-good: 70 125 25;
+  --pz-bad: 176 52 38;
+  --pz-fire: 196 96 22;
+  --pz-blue: 42 104 166;
+}
+
 /* ─── Progress card ───────────────────────────────────────── */
 
 .pz-progress {
   @apply pb-4;
 }
 .pz-rating-row {
-  @apply flex items-baseline gap-2.5 px-4;
+  @apply flex items-end justify-between gap-3 px-4;
 }
 .pz-rating-num {
   @apply text-[36px] font-semibold leading-none tracking-[-0.02em];
-  color: rgb(var(--ink-default));
+  background-image: linear-gradient(180deg, rgb(var(--ink-default)) 30%, rgb(var(--accent-ink)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
 }
 .pz-rating-delta {
-  @apply text-[13px] font-semibold px-2 py-0.5 rounded-md;
+  @apply text-[12px] font-semibold px-1.5 py-0.5 rounded-md;
+  font-variant-numeric: tabular-nums;
 }
 .pz-rating-delta.up {
-  color: #4ea44e;
-  background: rgba(58, 125, 58, 0.12);
+  color: rgb(var(--pz-good));
+  background: rgb(var(--pz-good) / 0.14);
 }
 .pz-rating-delta.down {
-  color: #d6443a;
-  background: rgba(181, 70, 50, 0.12);
+  color: rgb(var(--pz-bad));
+  background: rgb(var(--pz-bad) / 0.14);
 }
 .pz-rating-label {
-  @apply text-[11px] px-4 pt-1;
+  @apply text-[11px] pt-1.5;
   color: rgb(var(--ink-3));
 }
+.pz-spark {
+  @apply shrink-0;
+  max-width: 45%;
+  height: auto;
+}
+.pz-spark.up {
+  color: rgb(var(--pz-good));
+}
+.pz-spark.down {
+  color: rgb(var(--pz-bad));
+}
+
+/* Tier pill in the card header — tinted by the player's current tier. */
+.pz-tier-pill {
+  @apply text-[10.5px] font-semibold px-2 py-[3px] rounded-full tracking-[0.02em];
+  color: rgb(var(--tier));
+  background: rgb(var(--tier) / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(var(--tier) / 0.25);
+}
+.pz-tier-pill.tier-beginner { --tier: var(--pz-good); }
+.pz-tier-pill.tier-easy { --tier: var(--pz-blue); }
+.pz-tier-pill.tier-medium { --tier: var(--accent-default); }
+.pz-tier-pill.tier-hard { --tier: var(--pz-fire); }
+.pz-tier-pill.tier-expert { --tier: var(--pz-bad); }
+
 .pz-stat-grid {
-  @apply grid gap-px mx-4 mt-3.5 rounded-lg overflow-hidden;
-  grid-template-columns: 1fr 1fr 1fr;
-  background: var(--line);
+  @apply grid gap-2 mx-4 mt-4;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .pz-stat {
-  @apply text-center py-2.5 px-2;
-  background: rgb(var(--wood-card));
+  @apply flex flex-col items-center justify-center text-center py-2.5 px-1.5 rounded-[10px] min-w-0;
+  --tone: var(--accent-default);
+  background: linear-gradient(180deg, rgb(var(--tone) / 0.14), rgb(var(--tone) / 0.05));
+  box-shadow: inset 0 0 0 1px rgb(var(--tone) / 0.2);
 }
+.pz-stat--streak { --tone: var(--pz-fire); }
+.pz-stat--today { --tone: var(--pz-blue); }
+.pz-stat--acc { --tone: var(--accent-default); }
 .pz-stat-num {
-  @apply text-[18px] font-semibold leading-tight;
+  @apply inline-flex items-center justify-center gap-1 text-[18px] font-semibold leading-tight;
   color: rgb(var(--ink-default));
+  font-variant-numeric: tabular-nums;
+}
+.pz-stat-icon {
+  color: rgb(var(--tone));
+}
+.pz-stat--streak .pz-stat-icon {
+  fill: rgb(var(--pz-fire) / 0.35);
+}
+/* Streak carried from yesterday but not yet extended today. */
+.pz-stat--streak.is-pending .pz-stat-icon {
+  fill: none;
+  opacity: 0.6;
 }
 .pz-stat-lbl {
-  @apply text-[10.5px] tracking-[0.02em] mt-0.5;
+  @apply text-[10.5px] tracking-[0.02em] mt-1 truncate max-w-full;
   color: rgb(var(--ink-3));
+}
+.pz-today {
+  @apply gap-2.5;
+}
+.pz-today-ok,
+.pz-today-bad {
+  @apply inline-flex items-center gap-0.5;
+}
+.pz-today-ok svg {
+  color: rgb(var(--pz-good));
+}
+.pz-today-bad svg {
+  color: rgb(var(--pz-bad));
+}
+.pz-acc-track {
+  @apply w-4/5 h-1 mt-1.5 rounded-full overflow-hidden;
+  background: rgb(var(--wood-dark) / 0.6);
+}
+.pz-acc-fill {
+  @apply block h-full rounded-full;
+  background: linear-gradient(90deg, rgb(var(--accent-default)), rgb(var(--pz-good)));
+  transition: width 0.3s;
+}
+
+/* ─── Solver stake card ───────────────────────────────────── */
+
+.pz-stake {
+  @apply pb-3.5;
+}
+.pz-stake-grid {
+  @apply grid gap-2 px-4;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pz-stake-tile {
+  @apply flex flex-col items-center gap-0.5 py-3 rounded-[10px] transition-opacity;
+  color: rgb(var(--tone));
+  background: linear-gradient(180deg, rgb(var(--tone) / 0.15), rgb(var(--tone) / 0.05));
+  box-shadow: inset 0 0 0 1px rgb(var(--tone) / 0.22);
+}
+.pz-stake-tile.win { --tone: var(--pz-good); }
+.pz-stake-tile.lose { --tone: var(--pz-bad); }
+.pz-stake-tile.is-zero {
+  --tone: var(--ink-4);
+}
+.pz-stake-num {
+  @apply text-[22px] font-semibold leading-none mt-1;
+  font-variant-numeric: tabular-nums;
+}
+.pz-stake-lbl {
+  @apply text-[10.5px] tracking-[0.02em];
+  color: rgb(var(--ink-3));
+}
+.pz-stake-foot {
+  @apply flex items-center justify-center gap-2 px-4 pt-3 text-[11.5px] font-mono;
+  color: rgb(var(--ink-2));
+}
+.pz-stake-vs {
+  @apply text-[10px] uppercase tracking-[0.08em];
+  color: rgb(var(--ink-4));
+}
+.pz-stake-themes {
+  @apply flex flex-wrap gap-1.5 px-4;
 }
 
 /* ─── Activity bars ───────────────────────────────────────── */
@@ -826,11 +952,78 @@
   color: rgb(var(--ink-3));
 }
 
+/* ─── Mobile solver chrome ────────────────────────────────── */
+
+.pz-m-meta {
+  @apply flex items-center justify-between gap-2 min-h-9;
+}
+.pz-m-back {
+  @apply inline-flex items-center gap-1 h-9 pl-1.5 pr-2.5 -ml-1.5 rounded-lg text-[13px] font-medium transition-colors;
+  color: rgb(var(--ink-2));
+}
+.pz-m-back:hover {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+.pz-m-meta-r {
+  @apply flex items-center gap-1.5 min-w-0;
+}
+.pz-m-today {
+  @apply inline-flex items-center gap-2 h-7 px-2.5 rounded-full text-[12px] font-semibold;
+  color: rgb(var(--ink-default));
+  background: rgb(var(--wood-card));
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.pz-m-elo {
+  @apply inline-flex items-center h-7 px-2.5 rounded-full text-[11.5px] font-semibold truncate;
+  color: rgb(var(--accent-ink));
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgb(var(--accent-default) / 0.3);
+}
+.pz-m-preview {
+  @apply grid grid-cols-2 gap-2;
+}
+.pz-m-preview-btn {
+  @apply h-9 inline-flex items-center justify-center rounded-[10px] border transition-colors;
+  background: rgb(var(--wood-card));
+  border-color: var(--line);
+  color: rgb(var(--ink-2));
+}
+.pz-m-preview-btn:hover:not(:disabled) {
+  background: rgb(var(--wood-hover));
+  color: rgb(var(--ink-default));
+}
+.pz-m-preview-btn:disabled {
+  opacity: 0.4;
+}
+.pz-m-actions .pz-action-btn {
+  @apply h-14;
+}
+.pz-m-actions .pz-action-btn span {
+  @apply text-[15px];
+}
+
 /* ─── Mobile overrides ─────────────────────────────────────── */
 
 /* On narrow viewports the daily card's fixed 220px right column squeezes
    the title; collapse to a single column so the board stacks below. */
 @media (max-width: 768px) {
+  .pz-stat-grid {
+    @apply gap-1.5;
+  }
+  .pz-stat-num {
+    @apply text-[16px];
+  }
+  .pz-today {
+    @apply gap-1.5;
+  }
+  .pz-daily-l {
+    @apply px-4 pt-4;
+  }
+  .pz-daily-title {
+    @apply text-[19px];
+  }
   .pz-daily {
     grid-template-columns: 1fr;
   }

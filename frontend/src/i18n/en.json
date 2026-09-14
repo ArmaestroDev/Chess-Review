@@ -255,7 +255,11 @@
         "rating": "Puzzle rating",
         "streak": "Streak",
         "today": "Today",
-        "accuracy": "Accuracy"
+        "accuracy": "Accuracy",
+        "todayDelta": "Rating change today",
+        "streakPending": "Solve a puzzle today to keep your streak",
+        "solved": "Solved today",
+        "failed": "Failed today"
       },
       "activity": {
         "title": "7-day activity",
@@ -285,6 +289,16 @@
       "back": "Back to hub",
       "rating": "Your Rating · {{elo}}",
       "solved": "solved",
+      "stake": {
+        "title": "Rating at stake",
+        "themes": "Themes",
+        "unrated": "Already rated",
+        "hinted": "Hint used",
+        "solve": "if solved",
+        "miss": "if missed",
+        "you": "You {{elo}}",
+        "puzzle": "Puzzle {{rating}}"
+      },
       "rail": {
         "hint": "Hint",
         "hintTitle": "Hint (3 escalating levels — forfeits ELO gain)",

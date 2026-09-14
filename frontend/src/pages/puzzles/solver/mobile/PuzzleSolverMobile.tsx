@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Eye, Lightbulb, Loader2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Eye, Lightbulb, Loader2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchPuzzleById } from '../../../../features/puzzles/api/fetchPuzzle';
@@ -12,6 +12,7 @@ import { PuzzleBoard } from '../../../../features/puzzles/components/solver/Puzz
 import { SolverInfoPanel } from '../../../../features/puzzles/components/solver/SolverInfoPanel';
 import { PuzzleResultPanel } from '../../../../features/puzzles/components/solver/PuzzleResultPanel';
 import { applyUci } from '../../../../features/puzzles/utils/validateSolution';
+import { todayStats } from '../../../../features/puzzles/utils/progressStats';
 import {
   usePublishMobileTopBarActions,
   useHideMobileBottomNav,
@@ -126,6 +127,7 @@ function PuzzleSolverMobileInner({
   const { t } = useTranslation();
   const session = usePuzzleSession(puzzle);
   const { elo, progress } = useElo();
+  const today = todayStats(progress.history);
 
   // Clear is not applicable — Reset lives inside the result panel instead.
   usePublishMobileTopBarActions({
@@ -150,26 +152,27 @@ function PuzzleSolverMobileInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzle.id]);
 
-  // Mobile board: fill available width, but also clamp by available height so
-  // the board doesn't overflow on short viewports. Reserves are approximate
-  // (topbar, page padding, meta row, info panel, preview nav, solved footer,
-  // action buttons, gaps, safe area) — we deliberately don't measure the DOM.
-  // The 220px floor prefers a shrunken board over vertical overflow on
-  // landscape phones / split screens.
+  // Mobile board: the largest square that fits the flex-1 slot between the
+  // info/result panel and the controls. Measured rather than guessed from
+  // window height, because the result panel is far taller than the prompt
+  // panel and a fixed reserve pushed the action row off-screen.
+  const boardSlotRef = useRef<HTMLDivElement | null>(null);
   const [boardSize, setBoardSize] = useState(320);
-  useEffect(() => {
-    function update() {
-      const availW = Math.min(window.innerWidth - 20, 720);
-      // Chrome reserve: ~50 topbar + 8 page top padding + 16 page bottom
-      // padding + 26 meta row + 120 info panel + 36 preview nav + 16 solved
-      // footer + 64 action buttons + 40 gaps + 16 safe-area ≈ 392.
-      const availH = window.innerHeight - 392;
-      const size = Math.max(220, Math.min(availW, availH));
-      setBoardSize(Math.floor(size));
+  useLayoutEffect(() => {
+    const el = boardSlotRef.current;
+    if (!el) return;
+    function update(w: number, h: number) {
+      const size = Math.floor(Math.min(w, h, 720));
+      if (size > 0) setBoardSize(Math.max(200, size));
     }
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    const rect = el.getBoundingClientRect();
+    update(rect.width, rect.height);
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (r) update(r.width, r.height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   // ---- History preview --------------------------------------------------
@@ -265,17 +268,24 @@ function PuzzleSolverMobileInner({
         style={{ gap: 8, padding: '8px 10px 16px', flex: 1, minHeight: 0 }}
       >
         {/* Top meta row */}
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            to="/puzzles"
-            className="inline-flex items-center gap-1 text-[12.5px] text-ink-3 hover:text-ink"
-          >
-            <ChevronLeft size={14} />
+        <div className="pz-m-meta">
+          <Link to="/puzzles" className="pz-m-back">
+            <ChevronLeft size={16} />
             {t('puzzles.solver.back')}
           </Link>
-          <span className="cr-pill cr-pill-mono text-[11px] text-ink-3">
-            {t('puzzles.solver.rating', { elo })}
-          </span>
+          <div className="pz-m-meta-r">
+            <span className="pz-m-today" title={t('puzzles.hub.progress.today')}>
+              <span className="pz-today-ok">
+                <Check size={12} strokeWidth={3} />
+                {today.solved}
+              </span>
+              <span className="pz-today-bad">
+                <X size={12} strokeWidth={3} />
+                {today.failed}
+              </span>
+            </span>
+            <span className="pz-m-elo">{t('puzzles.solver.rating', { elo })}</span>
+          </div>
         </div>
 
         {/* Info / result panel */}
@@ -316,7 +326,10 @@ function PuzzleSolverMobileInner({
         )}
 
         {/* Board — flex-grow wrapper centers it in the freed vertical space */}
-        <div className="flex-1 min-h-0 flex items-center justify-center">
+        <div
+          ref={boardSlotRef}
+          className="flex-1 min-h-0 flex items-center justify-center"
+        >
           <div
             className="cr-mobile-board-wrap"
             style={{ width: boardSize }}
@@ -334,69 +347,65 @@ function PuzzleSolverMobileInner({
           </div>
         </div>
 
-        {/* Preview navigation — step backward through the moves played so
-            far to re-inspect the position. Only enabled while solving; the
-            board stays read-only while previewing. */}
-        <div
-          className="grid grid-cols-2 gap-2"
-          aria-label={t('puzzles.solver.preview.label')}
-        >
-          <button
-            type="button"
-            onClick={onPreviewBack}
-            disabled={!canPreviewBack}
-            aria-label={t('puzzles.solver.preview.back')}
-            title={t('puzzles.solver.preview.back')}
-            className="h-9 inline-flex items-center justify-center rounded-[8px] border border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-40 transition-colors"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            onClick={onPreviewForward}
-            disabled={!canPreviewForward}
-            aria-label={t('puzzles.solver.preview.forward')}
-            title={t('puzzles.solver.preview.forward')}
-            className="h-9 inline-flex items-center justify-center rounded-[8px] border border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-40 transition-colors"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+        {/* Controls only matter while solving — the result panel carries
+            Retry / Next afterwards, so drop them and give the board room. */}
+        {!isTerminal && (
+          <>
+            {/* Preview navigation — step backward through the moves played so
+                far to re-inspect the position. Only enabled while solving; the
+                board stays read-only while previewing. */}
+            <div
+              className="pz-m-preview"
+              aria-label={t('puzzles.solver.preview.label')}
+            >
+              <button
+                type="button"
+                onClick={onPreviewBack}
+                disabled={!canPreviewBack}
+                aria-label={t('puzzles.solver.preview.back')}
+                title={t('puzzles.solver.preview.back')}
+                className="pz-m-preview-btn"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={onPreviewForward}
+                disabled={!canPreviewForward}
+                aria-label={t('puzzles.solver.preview.forward')}
+                title={t('puzzles.solver.preview.forward')}
+                className="pz-m-preview-btn"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
 
-        {/* Solved counter — small, above the action row */}
-        <div className="text-[10.5px] text-ink-3 text-center">
-          {t('puzzles.solver.solved')}: {progress.stats.solved}
-        </div>
-
-        {/* Bottom action row — pinned to the safe-area edge (main already
-            supplies the inset, so no extra padding here). The "Next" action
-            lives inside the result panel after a puzzle ends, so it's not
-            duplicated here. */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={session.requestHint}
-            disabled={!solving || session.state.kind !== 'awaiting-user-move'}
-            className={
-              'h-16 inline-flex items-center justify-center gap-2.5 rounded-[14px] border text-[16px] font-semibold transition-colors ' +
-              (hintActive
-                ? 'border-accent bg-accent-soft text-accent-ink'
-                : 'border-line bg-wood-card text-ink-2 hover:bg-wood-hover hover:text-ink disabled:opacity-45')
-            }
-          >
-            <Lightbulb size={22} />
-            {t('puzzles.solver.rail.hint')}
-          </button>
-          <button
-            type="button"
-            onClick={session.revealSolution}
-            disabled={!solving}
-            className="h-16 inline-flex items-center justify-center gap-2.5 rounded-[14px] border border-line bg-wood-card text-ink-2 text-[16px] font-semibold hover:bg-wood-hover hover:text-ink disabled:opacity-45 transition-colors"
-          >
-            <Eye size={22} />
-            {t('puzzles.solver.rail.reveal')}
-          </button>
-        </div>
+            {/* Bottom action row — pinned to the safe-area edge (main already
+                supplies the inset, so no extra padding here). The "Next" action
+                lives inside the result panel after a puzzle ends, so it's not
+                duplicated here. */}
+            <div className="pz-actions-bar pz-m-actions">
+              <button
+                type="button"
+                onClick={session.requestHint}
+                disabled={!solving || session.state.kind !== 'awaiting-user-move'}
+                className={`pz-action-btn ${hintActive ? 'active' : ''}`}
+              >
+                <Lightbulb size={20} />
+                <span>{t('puzzles.solver.rail.hint')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={session.revealSolution}
+                disabled={!solving}
+                className="pz-action-btn"
+              >
+                <Eye size={20} />
+                <span>{t('puzzles.solver.rail.reveal')}</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </main>
   );
