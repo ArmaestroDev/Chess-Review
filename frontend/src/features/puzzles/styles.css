@@ -646,13 +646,70 @@
   @apply text-[10.5px] font-semibold px-2 py-[3px] rounded-full tracking-[0.02em];
   color: rgb(var(--tier));
   background: rgb(var(--tier) / 0.14);
-  box-shadow: inset 0 0 0 1px rgb(var(--tier) / 0.25);
+  box-shadow: inset 0 0 0 1px rgb(var(--tier) / 0.35);
 }
-.pz-tier-pill.tier-beginner { --tier: var(--pz-good); }
-.pz-tier-pill.tier-easy { --tier: var(--pz-blue); }
-.pz-tier-pill.tier-medium { --tier: var(--accent-default); }
-.pz-tier-pill.tier-hard { --tier: var(--pz-fire); }
-.pz-tier-pill.tier-expert { --tier: var(--pz-bad); }
+/* Difficulty scale: green → yellow → orange → red → black. Shared by the
+   progress card's tier pill and the solver's puzzle card. */
+.tier-beginner { --tier: 76 175 80; }
+.tier-easy { --tier: 170 190 40; }
+.tier-medium { --tier: 232 160 32; }
+.tier-hard { --tier: 220 60 48; }
+.tier-expert { --tier: 150 150 150; }
+.mode-light .tier-beginner { --tier: 46 125 50; }
+.mode-light .tier-easy { --tier: 118 138 18; }
+.mode-light .tier-medium { --tier: 190 115 10; }
+.mode-light .tier-hard { --tier: 190 40 30; }
+.mode-light .tier-expert { --tier: 20 18 16; }
+
+/* Expert = "black": solid dark chip with light text in both modes. */
+.pz-tier-pill.tier-expert,
+.tier-expert .pz-diff-badge {
+  color: #f4ece0;
+  background: rgb(18 16 14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+/* ─── Solver puzzle card: difficulty ──────────────────────── */
+
+.pz-info-card {
+  border-top: 3px solid rgb(var(--tier, var(--accent-default)));
+  background-image: linear-gradient(180deg, rgb(var(--tier, var(--accent-default)) / 0.10), transparent 55%);
+}
+.pz-diff-badge {
+  @apply inline-flex items-center gap-1.5 h-6 pl-2 pr-1 rounded-full text-[11.5px] font-semibold;
+  color: rgb(var(--tier));
+  background: rgb(var(--tier) / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(var(--tier) / 0.35);
+}
+.pz-diff-dot {
+  @apply w-2 h-2 rounded-full;
+  background: currentColor;
+}
+.pz-diff-rating {
+  @apply px-1.5 py-px rounded-full font-mono text-[10.5px];
+  background: rgb(var(--tier) / 0.18);
+}
+.tier-expert .pz-diff-rating {
+  background: rgba(255, 255, 255, 0.14);
+}
+.pz-diff-meter {
+  @apply grid gap-1 px-4 pb-3;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.pz-diff-meter > span {
+  @apply h-1.5 rounded-full;
+  background: rgb(var(--wood-dark) / 0.6);
+}
+.mode-light .pz-diff-meter > span {
+  background: rgba(60, 50, 35, 0.10);
+}
+.pz-diff-meter > span.on {
+  background: rgb(var(--tier));
+}
+.tier-expert .pz-diff-meter > span.on {
+  background: rgb(18 16 14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
 
 .pz-stat-grid {
   @apply grid gap-2 mx-4 mt-4;

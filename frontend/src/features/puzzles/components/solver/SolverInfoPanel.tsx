@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Puzzle, SessionState } from '../../types';
-import { classifyTier } from '../../utils/difficulty';
+import { ALL_TIERS, classifyTier } from '../../utils/difficulty';
 import { useTierLabel } from '../../utils/i18nHelpers';
 
 interface Props {
@@ -17,12 +17,29 @@ export function SolverInfoPanel({ state, puzzle, userColor }: Props) {
   const hintText = hintFor(state, puzzle, t);
 
   return (
-    <div className="cr-card pz-info-card">
+    <div className={`cr-card pz-info-card tier-${tier}`}>
       <div className="cr-card-hd">
         <div className="cr-card-title">{t('puzzles.solver.info.title')}</div>
-        <span className="cr-pill cr-pill-mono">
-          {tierLabel(tier)} · {puzzle.rating}
+        <span className="pz-diff-badge">
+          <span className="pz-diff-dot" aria-hidden />
+          {tierLabel(tier)}
+          <span className="pz-diff-rating">{puzzle.rating}</span>
         </span>
+      </div>
+      <div
+        className="pz-diff-meter"
+        role="meter"
+        aria-label={tierLabel(tier)}
+        aria-valuemin={1}
+        aria-valuemax={ALL_TIERS.length}
+        aria-valuenow={ALL_TIERS.indexOf(tier) + 1}
+      >
+        {ALL_TIERS.map((tr, i) => (
+          <span
+            key={tr}
+            className={i <= ALL_TIERS.indexOf(tier) ? 'on' : ''}
+          />
+        ))}
       </div>
 
       <div className="pz-info-body">
